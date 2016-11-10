@@ -1,0 +1,28 @@
+{
+  "name": "speak-and-spell",
+  "version": "0.0.1",
+  "description": "UT Coding Bootcamp Group Project #2",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "Matt Davis, Carlos Lopez, Gael Arrambide",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "express-handlebars": "^3.0.0",
+    "express": "^4.14.0",
+    "mysql": "^2.11.1",
+    "sequelize": "^3.24.8"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mattsplats/speak_and_spell.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mattsplats/speak_and_spell/issues"
+  },
+  "homepage": "https://github.com/mattsplats/speak_and_spell#readme"
+}

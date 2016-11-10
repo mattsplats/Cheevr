@@ -1,0 +1,43 @@
+body {
+  /* http://lea.verou.me/css3patterns/#blueprint-grid */
+  background-color: #BBDDF5;
+  background-image: linear-gradient(white 2px, transparent 2px),
+    linear-gradient(90deg, white 2px, transparent 2px),
+    linear-gradient(rgba(255,255,255,.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.3) 1px, transparent 1px);
+  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+  background-position: -2px -2px, -2px -2px, -1px -1px, -1px -1px;
+
+  font-family: 'Raleway', sans-serif;
+  font-size: 200%;
+}
+
+body, h1, h2 {
+  font-weight: 800;
+}
+
+select {
+  border-radius: 4px; 
+  border: 1px solid #AAA;
+}
+
+.jumbotron {
+  background-color: white;
+}
+
+.list-group-item {
+  padding: 5px;
+}
+
+.form-control {
+  font-size: 100%;
+}
+
+#done {
+  color: lightgrey;
+}
+
+/* Custom classes */
+.min-height {
+  min-height: 313px;  /* Permits 5 tasks or 4 completed without movement */
+}
