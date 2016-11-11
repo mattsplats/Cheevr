@@ -5,8 +5,29 @@ const express = require('express'),
       models  = require('../models');
 
 // Display page
-router.get('/', (req, res) =>
-  res.render('index')
-);
+router.get('/', (req, res) => res.render('index'));
+
+
+// Alexa API
+router.get('/alexa/:quizName', (req, res) => {
+  let quiz = [{q: 'Nope', a: 'poop'}];
+
+  if (req.params.quizName === 'capital' || req.params.quizName === 'capitals') {
+    quiz = [
+      {
+        q: 'Texas'
+        a: 'Austin'
+      },
+      {
+        q: 'Illinois'
+        a: 'Springfield'
+      }
+    ];
+  }
+
+  res.json(quiz);
+});
+
+router.put('/alexa', (req, res) => res.json({OK: true}));
 
 module.exports = router;
