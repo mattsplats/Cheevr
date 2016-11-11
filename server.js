@@ -5,7 +5,7 @@ const express    = require('express'),
       exphbs     = require('express-handlebars'),
       bodyParser = require('body-parser'),
 
-      routes     = require('./controllers/todo_controller.js'),
+      routes     = require('./controllers/controller.js'),
       models     = require('./models'),
 
       app        = express(),
