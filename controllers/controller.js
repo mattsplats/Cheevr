@@ -10,7 +10,15 @@ router.get('/', (req, res) => res.render('index'));
 
 // Alexa API
 router.get('/alexa/:quizName', (req, res) => {
-  let quiz = [{q: 'Nope', a: 'poop'}];
+  // Modify question output depending on quiz type
+  const preprocessQuiz = {
+    'trueFalse': function (quiz) {
+      for (const obj of quiz) obj.q = 'True or false: ' + obj.q;
+      return quiz;
+    }
+  }
+  let quiz = [{q: 'Nope', a: true}],
+      type = 'trueFalse';
 
   if (req.params.quizName === 'capital' || req.params.quizName === 'capitals') {
     quiz = [
@@ -25,10 +33,10 @@ router.get('/alexa/:quizName', (req, res) => {
     ];
   }
 
-  res.json({quiz: quiz, name: req.params.quizName, type: 'trueFalse'});
+  res.json({quiz: preprocessQuiz[type](quiz), name: req.params.quizName, type: type});
 });
 
-router.put('/alexa', (req, res) => {
+router.post('/alexa', (req, res) => {
   console.log(req.body);
   res.json({OK: true});
 });
