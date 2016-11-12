@@ -47,12 +47,11 @@ router.get('/alexa/:quizName', (req, res) => {
     ];
   }
 
-  sse.send({quiz: preprocessQuiz[type](quiz), name: req.params.quizName, type: type});
   res.json({quiz: preprocessQuiz[type](quiz), name: req.params.quizName, type: type});
 });
 
 router.post('/alexa', (req, res) => {
-  console.log(req.body);
+  sse.send(req.body);
   res.json({OK: true});
 });
 
