@@ -8,11 +8,13 @@ const express = require('express'),
       models  = require('../models'),
 
       // Const vars
-      sse     = new expsse(['test']),
+      sse     = new expsse(['keepAlive']),
       router  = express.Router();
 
 // Server-sent events API
 router.get('/stream', sse.init);
+function keepAlive () { sse.send('keepAlive') }
+setTimeout(keepAlive, 30000);
 
 
 
