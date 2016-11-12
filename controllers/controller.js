@@ -15,19 +15,22 @@ router.get('/alexa/:quizName', (req, res) => {
   if (req.params.quizName === 'capital' || req.params.quizName === 'capitals') {
     quiz = [
       {
-        q: 'Texas',
-        a: 'Austin'
+        q: 'Austin is the capital of Texas',
+        a: true
       },
       {
-        q: 'Illinois',
-        a: 'Springfield'
+        q: 'Chicago is the capital of Illinois',
+        a: false
       }
     ];
   }
 
-  res.json({quiz: quiz});
+  res.json({quiz: quiz, name: req.params.quizName, type: 'trueFalse'});
 });
 
-router.put('/alexa', (req, res) => res.json({OK: true}));
+router.put('/alexa', (req, res) => {
+  console.log(req.body);
+  res.json({OK: true});
+});
 
 module.exports = router;
