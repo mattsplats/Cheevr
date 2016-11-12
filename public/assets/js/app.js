@@ -2,5 +2,9 @@
 
 // On load
 $(function () {
-  // Page code here
+  const es = new EventSource('/stream');
+ 
+  es.onmessage = function (event) {
+    $('#ul').append($('<li>').text(event.data));
+  };
 });

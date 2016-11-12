@@ -1,11 +1,25 @@
 'use strict';
 
+// Modules
 const express = require('express'),
-      router  = express.Router(),
-      models  = require('../models');
+      expsse  = require('express-sse'),
 
+      // Local dependencies
+      models  = require('../models'),
+
+      // Const vars
+      sse     = new expsse(),
+      router  = express.Router();
+
+// Server-sent events API
+router.get('/stream', sse.init);
+
+
+
+// Web API
 // Display page
 router.get('/', (req, res) => res.render('index'));
+
 
 
 // Alexa API
@@ -33,6 +47,7 @@ router.get('/alexa/:quizName', (req, res) => {
     ];
   }
 
+  sse.send({quiz: preprocessQuiz[type](quiz), name: req.params.quizName, type: type});
   res.json({quiz: preprocessQuiz[type](quiz), name: req.params.quizName, type: type});
 });
 
@@ -40,5 +55,7 @@ router.post('/alexa', (req, res) => {
   console.log(req.body);
   res.json({OK: true});
 });
+
+
 
 module.exports = router;
