@@ -33,23 +33,12 @@ router.get('/alexa/:quizName', (req, res) => {
       return quiz;
     }
   }
-  let quiz = [{q: 'Nope', a: true}],
-      type = 'trueFalse';
 
-  if (req.params.quizName === 'capital' || req.params.quizName === 'capitals') {
-    quiz = [
-      {
-        q: 'Austin is the capital of Texas',
-        a: true
-      },
-      {
-        q: 'Chicago is the capital of Illinois',
-        a: false
-      }
-    ];
-  }
-
-  res.json({quiz: preprocessQuiz[type](quiz), name: req.params.quizName, type: type});
+  models.Quiz.findOne({where: {name: req.params.quizName}}).then(quiz =>
+    models.Question.findAll({where: {QuizID: quiz.id}}).then(questions =>
+      res.json({quiz: preprocessQuiz[quiz.type](questions), name: quiz.name, type: quiz.type})
+    )
+  );
 });
 
 router.post('/alexa', (req, res) => {
