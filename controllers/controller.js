@@ -1,11 +1,27 @@
 'use strict';
 
+// Modules
 const express = require('express'),
-      router  = express.Router(),
-      models  = require('../models');
+      expsse  = require('express-sse'),
 
+      // Local dependencies
+      models  = require('../models'),
+
+      // Const vars
+      sse     = new expsse(['keepAlive']),
+      router  = express.Router();
+
+// Server-sent events API
+router.get('/stream', sse.init);
+function keepAlive () { sse.send('keepAlive') }
+setInterval(keepAlive, 50000);
+
+
+
+// Web API
 // Display page
 router.get('/', (req, res) => res.render('index'));
+
 
 
 // Alexa API
@@ -37,8 +53,10 @@ router.get('/alexa/:quizName', (req, res) => {
 });
 
 router.post('/alexa', (req, res) => {
-  console.log(req.body);
+  sse.send(req.body);
   res.json({OK: true});
 });
+
+
 
 module.exports = router;

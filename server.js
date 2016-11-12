@@ -1,13 +1,15 @@
 'use strict';
 
-// Includes / static vars
+// Modules
 const express    = require('express'),
       exphbs     = require('express-handlebars'),
       bodyParser = require('body-parser'),
 
+      // Local dependencies
       routes     = require('./controllers/controller.js'),
       models     = require('./models'),
 
+      // Const vars
       app        = express(),
       hbs        = exphbs.create({ defaultLayout: 'main', extname: '.hbs' }),
       PORT       = process.env.PORT || 3000;
@@ -15,7 +17,7 @@ const express    = require('express'),
 // Handlebars init
 app.engine('.hbs', hbs.engine);
 app.set('view engine', '.hbs');
-if (PORT !== 3000) app.enable('view cache');  // Disable view cache for local testing
+if (!process.env.PORT) app.enable('view cache');  // Disable view cache for local testing
 
 // Body parser init
 app.use(bodyParser.json());
