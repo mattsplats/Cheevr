@@ -2,15 +2,15 @@
   "development": {
     "username": "root",
     "password": "j5M@jXA%NbS4",
-    "database": "todo_db",
+    "database": "quiz_db",
     "host": "localhost",
     "dialect": "mysql"
   },
   "test": {
     "username": "root",
-    "password": null,
-    "database": "database_test",
-    "host": "127.0.0.1",
+    "password": "j5M@jXA%NbS4",
+    "database": "quiz_db",
+    "host": "localhost",
     "dialect": "mysql"
   },
   "production": {
