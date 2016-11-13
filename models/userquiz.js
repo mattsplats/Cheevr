@@ -1,8 +1,8 @@
 'use strict';
 module.exports = function(sequelize, DataTypes) {
-  var Result = sequelize.define('Result', {
+  var UserQuiz = sequelize.define('UserQuiz', {
     timesAttempted: DataTypes.INTEGER,
-    timesSucceeded: DataTypes.INTEGER,
+    timesSucceeded: DataTypes.FLOAT,
     accuracy: DataTypes.FLOAT
   }, {
     classMethods: {
@@ -11,5 +11,5 @@ module.exports = function(sequelize, DataTypes) {
       }
     }
   });
-  return Result;
+  return UserQuiz;
 };

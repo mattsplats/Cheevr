@@ -1,19 +1,15 @@
 'use strict';
 module.exports = function(sequelize, DataTypes) {
-  var Quiz = sequelize.define('Quiz', {
-    name: DataTypes.STRING,
-    type: DataTypes.STRING,
-    OwnerId: DataTypes.INTEGER,
+  var UserQuestion = sequelize.define('UserQuestion', {
     timesAttempted: DataTypes.INTEGER,
     timesSucceeded: DataTypes.INTEGER,
     accuracy: DataTypes.FLOAT
   }, {
     classMethods: {
       associate: function(models) {
-        Quiz.hasMany(models.Question);
-        Quiz.belongsToMany(models.User, {through: models.UserQuiz});
+        // associations can be defined here
       }
     }
   });
-  return Quiz;
+  return UserQuestion;
 };

@@ -6,7 +6,7 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     classMethods: {
       associate: function(models) {
-        Question.belongsToMany(models.User, {through: models.Result});
+        Question.belongsToMany(models.User, {through: models.UserQuestion});
       }
     }
   });

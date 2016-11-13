@@ -55,26 +55,61 @@ router.post('/alexa', (req, res) => {
     {
       where: {username: 'dummyUser'}
     }
+  ).then(user =>
+    models.Quiz.findOne(
+      {
+        where: {name: req.body.name}
+      }
+    ).then(quiz => 
+      quiz.addUser(user).then(() => {
+        models.UserQuiz.findOne(
+          {
+            where: {QuizId: quiz.id}
+          }
+        ).then(uq => {
+          if (uq.timesAttempted === null) uq.timesAttempted = 0;
+          if (uq.timesSucceeded === null) uq.timesSucceeded = 0;
+
+          uq.timesAttempted += req.body.results.length;
+          uq.timesSucceeded += req.body.results.reduce((a,b) => b ? a + 1 : a, 0);
+          uq.accuracy = 100 * uq.timesSucceeded / uq.timesAttempted;
+
+          models.UserQuiz.update({
+            timesAttempted: uq.timesAttempted,
+            timesSucceeded: uq.timesSucceeded,
+            accuracy: uq.accuracy
+          }, {
+            where: {QuizId: quiz.id}
+          })
+        })
+      })
+    )
+  );
+
+  models.User.findOne(
+    {
+      where: {username: 'dummyUser'}
+    }
   ).then(user => {
     user.addQuestions(req.body.ids)
     .then(() => {
       for (let i = 0; i < req.body.ids.length; i++) {
-        models.Result.findOne(
+        models.UserQuestion.findOne(
           {
             where: {QuestionId: req.body.ids[i]}
           }
-        ).then(result => {
-          if (result.timesAttempted === null) result.timesAttempted = 0;
-          if (result.timesSucceeded === null) result.timesSucceeded = 0;
+        ).then(uq => {
+          if (uq.timesAttempted === null) uq.timesAttempted = 0;
+          if (uq.timesSucceeded === null) uq.timesSucceeded = 0;
 
-          result.timesAttempted++;
-          if (req.body.results[i] === true) result.timesSucceeded++;
-          result.accuracy = 100 * result.timesSucceeded / result.timesAttempted;
+          uq.timesAttempted++;
+          if (req.body.results[i] === true) uq.timesSucceeded++;
+          uq.accuracy = 100 * uq.timesSucceeded / uq.timesAttempted;
 
-          models.Result.update({
-            timesAttempted: result.timesAttempted,
-            timesSucceeded: result.timesSucceeded,
-            accuracy: result.accuracy
+          models.UserQuestion.update({
+            timesAttempted: uq.timesAttempted,
+            timesSucceeded: uq.timesSucceeded,
+            accuracy: uq.accuracy
           }, {
             where: {QuestionId: req.body.ids[i]}
           })
