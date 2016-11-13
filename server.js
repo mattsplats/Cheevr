@@ -47,17 +47,18 @@ models.sequelize.query('SET FOREIGN_KEY_CHECKS = 0')
 
 // Create initial quiz
 .then(() => models.Quiz.findOne({where: {name: 'capitals'}})
+  
   .then(quiz => models.Question.create({
     q: 'Austin is the capital of Texas',
-    a: true,
+    a: 'true',
     timesAttempted: 0,
     timesSucceeded: 0,
     accuracy: 0
-  })
-    .then(question => quiz.addQuestion(question))
+  }).then(question => quiz.addQuestion(question))
+
   .then(() => models.Question.create({
     q: 'Chicago is the capital of Illinois',
-    a: false,
+    a: 'false',
     timesAttempted: 0,
     timesSucceeded: 0,
     accuracy: 0

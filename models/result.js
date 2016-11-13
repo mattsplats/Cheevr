@@ -1,10 +1,9 @@
 'use strict';
 module.exports = function(sequelize, DataTypes) {
   var Result = sequelize.define('Result', {
-    name: DataTypes.STRING,
-    type: DataTypes.STRING,
     timesAttempted: DataTypes.INTEGER,
-    timesSucceeded: DataTypes.INTEGER
+    timesSucceeded: DataTypes.INTEGER,
+    accuracy: DataTypes.FLOAT
   }, {
     classMethods: {
       associate: function(models) {
