@@ -25,7 +25,7 @@ router.get('/', (req, res) => res.render('index'));
 // Alexa API
 router.get('/alexa/:quizName', (req, res) => {
 
-  models.sequelize.query(`SELECT id, name, type FROM quizzes WHERE name SOUNDS LIKE ?`,
+  models.sequelize.query(`SELECT id, name, type FROM Quizzes WHERE name SOUNDS LIKE ?`,
     {
       replacements: [req.params.quizName],
       model: models.Quiz
