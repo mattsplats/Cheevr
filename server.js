@@ -27,43 +27,56 @@ app.use(bodyParser.text());
 
 // Sequelize init
 // Drop all tables
-models.sequelize.query('SET FOREIGN_KEY_CHECKS = 0')
-.then(() => models.sequelize.sync({force:true}))
+models.sequelize.query('SET FOREIGN_KEY_CHECKS = 0').then(() => 
+  models.sequelize.sync({force:true}))
 
 // Create dummy user
-.then(() => models.User.create({
-  username: 'dummyUser',
-  Quizzes: [{
-    name: 'capitals',
-    type: 'trueFalse',
-    timesAttempted: 0,
-    timesSucceeded: 0,
-    accuracy: 0
-  }]
-},
-{
-  include: [models.Quiz]
-}))
+  .then(() => models.User.create({
+    username: 'dummyUser',
+    Quizzes: [{
+      name: 'capitals',
+      type: 'trueFalse',
+      OwnerId: 1,
+      timesAttempted: 0,
+      timesSucceeded: 0,
+      accuracy: 0
+    }]
+  },
+  {
+    include: [models.Quiz]
+  })
+)
 
 // Create initial quiz
-.then(() => models.Quiz.findOne({where: {name: 'capitals'}})
-  
-  .then(quiz => models.Question.create({
-    q: 'Austin is the capital of Texas',
-    a: 'true',
-    timesAttempted: 0,
-    timesSucceeded: 0,
-    accuracy: 0
-  }).then(question => quiz.addQuestion(question))
+.then(() => 
+  models.Quiz.findOne(
+    {
+      where: {name: 'capitals'}
+    }
+  ).then(quiz => 
+    models.Question.create({
+      q: 'Austin is the capital of Texas',
+      a: 'true',
+      timesAttempted: 0,
+      timesSucceeded: 0,
+      accuracy: 0
+    }).then(question => 
+      quiz.addQuestion(question)
+    )
 
-  .then(() => models.Question.create({
-    q: 'Chicago is the capital of Illinois',
-    a: 'false',
-    timesAttempted: 0,
-    timesSucceeded: 0,
-    accuracy: 0
-  }).then(question => quiz.addQuestion(question))
-)))
+    .then(() => 
+      models.Question.create({
+        q: 'Chicago is the capital of Illinois',
+        a: 'false',
+        timesAttempted: 0,
+        timesSucceeded: 0,
+        accuracy: 0
+      }).then(question =>
+        quiz.addQuestion(question)
+      )
+    )
+  )
+)
 
 // Re-enable foreign key checks 
 .then(() => models.sequelize.query('SET FOREIGN_KEY_CHECKS = 1'));

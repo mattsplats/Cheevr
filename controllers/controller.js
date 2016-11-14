@@ -17,9 +17,59 @@ function keepAlive () { sse.send('keepAlive') }
 setInterval(keepAlive, 50000);
 
 
+
 // Web API
 // Display page
 router.get('/', (req, res) => res.render('index'));
+
+// Add new quiz
+router.post('/', (req, res) => {
+  if (/[^a-z0-9.,:!?' ]/gi.test(req.body.name)) {
+    res.json({status: 1})  // Status 1: string contains illegal characters
+
+  } else {
+    // Add new quiz to current user
+    models.User.findOne(
+      {
+        where: {username: 'dummyUser'}
+      }
+    ).then(user => 
+      models.Quiz.create({
+        name: req.body.name,
+        type: req.body.type,
+        OwnerId: user.id,
+        timesAttempted: 0,
+        timesSucceeded: 0
+      })
+    ).then(quiz => {
+      for (var i = 0; i < req.body.quiz.length; i++) {
+        models.Question.create({
+          q: req.body.quiz[i].q,
+          a: req.body.quiz[i].a,
+          choiceA: req.body.quiz[i].choiceA,
+          choiceB: req.body.quiz[i].choiceB,
+          choiceC: req.body.quiz[i].choiceC,
+          choiceD: req.body.quiz[i].choiceD
+        }).then(question => quiz.addQuestion(question))
+      }
+    }).then(() => 
+      res.json({status: 0})  // Status 0: OK
+    )
+  }
+});
+
+// Modify quiz
+// router.put('/', (req, res) => {
+//   models.Task.update({ desc: req.body.desc }, { where: { id: req.body.id }}).then(result => res.json(result));
+// });
+
+// Delete quiz
+// router.delete('/', (req, res) => {
+//   models.Category.findOne({ where: { name: req.body.category } }).then(category =>
+//     models.Task.destroy({ where: { isComplete: true, CategoryId: category.id }}).then(result => res.json(result))
+//   );
+// });
+
 
 
 // Alexa API
@@ -55,17 +105,36 @@ router.post('/alexa', (req, res) => {
   // Send live updates to webpage
   sse.send(req.body);
 
-  // Update UserQuiz table
+  // Update database  
   models.User.findOne(
     {
       where: {username: 'dummyUser'}
     }
-  ).then(user =>
+  ).then(user => {
+
+    // Update Quiz tables
     models.Quiz.findOne(
       {
         where: {name: req.body.name}
       }
-    ).then(quiz => 
+    ).then(quiz => {
+      // Update Quiz table
+      if (quiz.timesAttempted === null) quiz.timesAttempted = 0;
+      if (quiz.timesSucceeded === null) quiz.timesSucceeded = 0;
+
+      quiz.timesAttempted += req.body.results.length;
+      quiz.timesSucceeded += req.body.results.reduce((a,b) => b ? a + 1 : a, 0);
+      quiz.accuracy = 100 * quiz.timesSucceeded / quiz.timesAttempted;
+
+      models.Quiz.update({
+        timesAttempted: quiz.timesAttempted,
+        timesSucceeded: quiz.timesSucceeded,
+        accuracy: quiz.accuracy
+      }, {
+        where: {id: quiz.id}
+      })
+
+      // Update UserQuiz table
       quiz.addUser(user).then(() => {
         models.UserQuiz.findOne(
           {
@@ -88,15 +157,9 @@ router.post('/alexa', (req, res) => {
           })
         })
       })
-    )
-  );
+    });
 
-  // Update UserQuestion table
-  models.User.findOne(
-    {
-      where: {username: 'dummyUser'}
-    }
-  ).then(user => {
+    // Update UserQuestion table
     user.addQuestions(req.body.ids)
     .then(() => {
       for (let i = 0; i < req.body.ids.length; i++) {
@@ -127,6 +190,7 @@ router.post('/alexa', (req, res) => {
   // Respond to XHR request
   res.json({OK: true});
 });
+
 
 
 module.exports = router;
