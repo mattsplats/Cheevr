@@ -23,6 +23,7 @@ router.get('/', (req, res) => res.render('index'));
 
 
 // Alexa API
+// Respond to quiz requests
 router.get('/alexa/:quizName', (req, res) => {
 
   models.sequelize.query(`SELECT id, name, type FROM Quizzes WHERE name SOUNDS LIKE ?`,
@@ -48,9 +49,13 @@ router.get('/alexa/:quizName', (req, res) => {
   );
 });
 
+// Update database with results
 router.post('/alexa', (req, res) => {
+  
+  // Send live updates to webpage
   sse.send(req.body);
 
+  // Update UserQuiz table
   models.User.findOne(
     {
       where: {username: 'dummyUser'}
@@ -86,6 +91,7 @@ router.post('/alexa', (req, res) => {
     )
   );
 
+  // Update UserQuestion table
   models.User.findOne(
     {
       where: {username: 'dummyUser'}
@@ -118,6 +124,7 @@ router.post('/alexa', (req, res) => {
     })
   });
 
+  // Respond to XHR request
   res.json({OK: true});
 });
 
