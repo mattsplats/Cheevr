@@ -55,7 +55,7 @@ models.sequelize.query('SET FOREIGN_KEY_CHECKS = 0').then(() =>
     }
   ).then(quiz => 
     models.Question.create({
-      q: 'Austin is the capital of Texas',
+      q: 'True or false: Austin is the capital of Texas',
       a: 'true',
       timesAttempted: 0,
       timesSucceeded: 0,
@@ -66,7 +66,7 @@ models.sequelize.query('SET FOREIGN_KEY_CHECKS = 0').then(() =>
 
     .then(() => 
       models.Question.create({
-        q: 'Chicago is the capital of Illinois',
+        q: 'True or false: Chicago is the capital of Illinois',
         a: 'false',
         timesAttempted: 0,
         timesSucceeded: 0,

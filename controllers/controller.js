@@ -24,10 +24,14 @@ router.get('/', (req, res) => res.render('index'));
 
 // Add new quiz
 router.post('/', (req, res) => {
-  if (/[^a-z0-9.,:!?' ]/gi.test(req.body.name)) {
-    res.json({status: 1})  // Status 1: string contains illegal characters
 
+  // If name string contains invalid characters
+  if (/[^a-z0-9.,:!?' ]/gi.test(req.body.name)) {
+    res.json({status: 1})  // Status 1: string contains invalid characters
+
+  // If all tests pass
   } else {
+
     // Add new quiz to current user
     models.User.findOne(
       {
@@ -43,6 +47,8 @@ router.post('/', (req, res) => {
       })
     ).then(quiz => {
       for (var i = 0; i < req.body.quiz.length; i++) {
+        if (req.body.type === 'trueFalse') req.body.quiz[i].q = 'True or false: ' + req.body.quiz[i].q;
+
         models.Question.create({
           q: req.body.quiz[i].q,
           a: req.body.quiz[i].a,
@@ -64,11 +70,27 @@ router.post('/', (req, res) => {
 // });
 
 // Delete quiz
-// router.delete('/', (req, res) => {
-//   models.Category.findOne({ where: { name: req.body.category } }).then(category =>
-//     models.Task.destroy({ where: { isComplete: true, CategoryId: category.id }}).then(result => res.json(result))
-//   );
-// });
+router.delete('/', (req, res) => {
+  models.Quiz.findOne(
+    {
+      where: {name: req.body.name}
+    }
+  ).then(quiz => 
+     models.Question.destroy(
+      {
+        where: {QuizId: quiz.id}
+      }
+    )
+  ).then(() =>
+    models.Quiz.destroy(
+      {
+        where: {name: req.body.name}
+      }
+    )
+  ).then(result =>
+    res.json({result: result})
+  );
+});
 
 
 
