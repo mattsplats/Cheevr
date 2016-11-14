@@ -11,6 +11,19 @@ const express = require('express'),
       sse     = new expsse(['keepAlive']),
       router  = express.Router();
 
+// Input verification for POST/UPDATE routes
+function verifyQuiz (req, res, success) {
+  if (/[^a-z0-9.,:!?' ]/gi.test(req.body.name)) {
+    res.json({status: 1});  // Status 1: string contains invalid characters
+
+  // If all tests pass
+  } else {
+    success();
+  }
+}
+
+
+
 // Server-sent events API
 router.get('/stream', sse.init);
 function keepAlive () { sse.send('keepAlive') }
@@ -24,13 +37,9 @@ router.get('/', (req, res) => res.render('index'));
 
 // Add new quiz
 router.post('/', (req, res) => {
-
-  // If name string contains invalid characters
-  if (/[^a-z0-9.,:!?' ]/gi.test(req.body.name)) {
-    res.json({status: 1})  // Status 1: string contains invalid characters
-
-  // If all tests pass
-  } else {
+  
+  // Check input, if it passes run 2nd param
+  verifyQuiz(req, res, () => {
 
     // Add new quiz to current user
     models.User.findOne(
@@ -61,7 +70,7 @@ router.post('/', (req, res) => {
     }).then(() => 
       res.json({status: 0})  // Status 0: OK
     )
-  }
+  })
 });
 
 // Modify quiz
@@ -106,10 +115,14 @@ router.get('/alexa/:quizName', (req, res) => {
   ).then(quiz =>
     models.Question.findAll(
       {
-        attributes: ['id', 'q', 'a'],
+        attributes: ['id', 'q', 'a', 'choiceA', 'choiceB', 'choiceC', 'choiceD'],
         where: {QuizID: quiz[0].dataValues.id}
       }
-    ).then(questions =>
+    ).then(questions => {
+      if (quiz[0].dataValues.type === 'multipleChoice') {
+        questions.map(question => question.q += ` Is it: A. ${question.choiceA}, B. ${question.choiceB}, C. ${question.choiceC}, or D. ${question.choiceD}?`)
+      }
+
       res.json(
         {
           quiz: questions,
@@ -117,7 +130,7 @@ router.get('/alexa/:quizName', (req, res) => {
           type: quiz[0].dataValues.type
         }
       )
-    )
+    })
   );
 });
 

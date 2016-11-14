@@ -33,49 +33,87 @@ models.sequelize.query('SET FOREIGN_KEY_CHECKS = 0').then(() =>
 // Create dummy user
   .then(() => models.User.create({
     username: 'dummyUser',
-    Quizzes: [{
-      name: 'capitals',
-      type: 'trueFalse',
-      OwnerId: 1,
-      timesAttempted: 0,
-      timesSucceeded: 0,
-      accuracy: 0
-    }]
+    Quizzes: [
+      {
+        name: 'capitals',
+        type: 'trueFalse',
+        OwnerId: 1
+      },
+      {
+        name: 'vocab',
+        type: 'multipleChoice',
+        OwnerId: 1
+      }
+    ]
   },
   {
     include: [models.Quiz]
   })
 )
 
-// Create initial quiz
+// Create true/false quiz
 .then(() => 
   models.Quiz.findOne(
     {
       where: {name: 'capitals'}
     }
-  ).then(quiz => 
+  ).then(quiz => {
     models.Question.create({
-      q: 'True or false: Austin is the capital of Texas',
-      a: 'true',
-      timesAttempted: 0,
-      timesSucceeded: 0,
-      accuracy: 0
+      q: 'Austin is the capital of Texas',
+      a: 'true'
     }).then(question => 
       quiz.addQuestion(question)
     )
 
-    .then(() => 
-      models.Question.create({
-        q: 'True or false: Chicago is the capital of Illinois',
-        a: 'false',
-        timesAttempted: 0,
-        timesSucceeded: 0,
-        accuracy: 0
-      }).then(question =>
-        quiz.addQuestion(question)
-      )
+    models.Question.create({
+      q: 'Chicago is the capital of Illinois',
+      a: 'false'
+    }).then(question =>
+      quiz.addQuestion(question)
     )
-  )
+  })
+)
+
+// Create multiple choice quiz
+.then(() => 
+  models.Quiz.findOne(
+    {
+      where: {name: 'vocab'}
+    }
+  ).then(quiz => {
+    models.Question.create({
+      q: 'What is the best synonym for the word, accurate?',
+      a: 'd',
+      choiceA: 'recent',
+      choiceB: 'better',
+      choiceC: 'pleased',
+      choiceD: 'correct'
+    }).then(question => 
+      quiz.addQuestion(question)
+    );
+
+    models.Question.create({
+      q: 'What is the best synonym for the word, ban?',
+      a: 'b',
+      choiceA: 'lose',
+      choiceB: 'prohibit',
+      choiceC: 'sigh',
+      choiceD: 'reflect'
+    }).then(question =>
+      quiz.addQuestion(question)
+    );
+
+    models.Question.create({
+      q: 'What is the best synonym for the word, definitely?',
+      a: 'c',
+      choiceA: 'quickly',
+      choiceB: 'easily',
+      choiceC: 'certainly',
+      choiceD: 'only'
+    }).then(question =>
+      quiz.addQuestion(question)
+    );
+  })
 )
 
 // Re-enable foreign key checks 
