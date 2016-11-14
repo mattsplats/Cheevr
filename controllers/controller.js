@@ -20,6 +20,10 @@ setInterval(keepAlive, 50000);
 // Web API
 // Display page
 router.get('/', (req, res) => res.render('index'));
+router.get('/selectquiz', (req, res) => res.render('layouts/selectquiz'));
+router.get('/createquiz', (req, res) => res.render('layouts/createquiz'));
+router.get('/gettingstarted', (req, res) => res.render('layouts/gettingstarted'));
+
 
 
 // Alexa API
@@ -51,7 +55,7 @@ router.get('/alexa/:quizName', (req, res) => {
 
 // Update database with results
 router.post('/alexa', (req, res) => {
-  
+
   // Send live updates to webpage
   sse.send(req.body);
 
@@ -65,7 +69,7 @@ router.post('/alexa', (req, res) => {
       {
         where: {name: req.body.name}
       }
-    ).then(quiz => 
+    ).then(quiz =>
       quiz.addUser(user).then(() => {
         models.UserQuiz.findOne(
           {
