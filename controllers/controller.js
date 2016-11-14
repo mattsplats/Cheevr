@@ -12,7 +12,7 @@ const express = require('express'),
       router  = express.Router();
 
 // Input verification for POST/UPDATE routes
-function verifyQuiz (req, res, success) {
+function verifyName (req, res, success) {
   if (/[^a-z0-9.,:!?' ]/gi.test(req.body.name)) {
     res.json({status: 1});  // Status 1: string contains invalid characters
 
@@ -39,7 +39,7 @@ router.get('/', (req, res) => res.render('index'));
 router.post('/', (req, res) => {
   
   // Check input, if it passes run 2nd param
-  verifyQuiz(req, res, () => {
+  verifyName(req, res, () => {
 
     // Add new quiz to current user
     models.User.findOne(
@@ -50,14 +50,10 @@ router.post('/', (req, res) => {
       models.Quiz.create({
         name: req.body.name,
         type: req.body.type,
-        OwnerId: user.id,
-        timesAttempted: 0,
-        timesSucceeded: 0
+        OwnerId: user.id
       })
     ).then(quiz => {
       for (var i = 0; i < req.body.quiz.length; i++) {
-        if (req.body.type === 'trueFalse') req.body.quiz[i].q = 'True or false: ' + req.body.quiz[i].q;
-
         models.Question.create({
           q: req.body.quiz[i].q,
           a: req.body.quiz[i].a,
@@ -74,9 +70,50 @@ router.post('/', (req, res) => {
 });
 
 // Modify quiz
-// router.put('/', (req, res) => {
-//   models.Task.update({ desc: req.body.desc }, { where: { id: req.body.id }}).then(result => res.json(result));
-// });
+router.put('/', (req, res) => {
+  // Check input, if it passes run callback
+  verifyName(req, res, () => {
+
+    // Update quiz for current user
+    models.User.findOne(
+      {
+        where: {username: 'dummyUser'}
+      }
+    ).then(user => 
+      models.Quiz.findOne(
+        {
+          where: {id: req.body.id}
+        }
+      ).then(quiz => {
+        
+        // Update Quiz table
+        quiz.update({
+          name: req.body.name,
+          type: req.body.type,
+        }).then(() => 
+          models.Question.destroy(
+            {
+              where: {QuizId: quiz.id}
+            }
+          )
+        ).then(() => {
+          for (var i = 0; i < req.body.quiz.length; i++) {
+            models.Question.create({
+              q: req.body.quiz[i].q,
+              a: req.body.quiz[i].a,
+              choiceA: req.body.quiz[i].choiceA,
+              choiceB: req.body.quiz[i].choiceB,
+              choiceC: req.body.quiz[i].choiceC,
+              choiceD: req.body.quiz[i].choiceD
+            }).then(question => quiz.addQuestion(question))
+          }
+        })
+      })
+    ).then(() => 
+      res.json({status: 0})  // Status 0: OK
+    )
+  })
+});
 
 // Delete quiz
 router.delete('/', (req, res) => {
@@ -154,9 +191,6 @@ router.post('/alexa', (req, res) => {
       }
     ).then(quiz => {
       // Update Quiz table
-      if (quiz.timesAttempted === null) quiz.timesAttempted = 0;
-      if (quiz.timesSucceeded === null) quiz.timesSucceeded = 0;
-
       quiz.timesAttempted += req.body.results.length;
       quiz.timesSucceeded += req.body.results.reduce((a,b) => b ? a + 1 : a, 0);
       quiz.accuracy = 100 * quiz.timesSucceeded / quiz.timesAttempted;
@@ -176,9 +210,6 @@ router.post('/alexa', (req, res) => {
             where: {QuizId: quiz.id}
           }
         ).then(uq => {
-          if (uq.timesAttempted === null) uq.timesAttempted = 0;
-          if (uq.timesSucceeded === null) uq.timesSucceeded = 0;
-
           uq.timesAttempted += req.body.results.length;
           uq.timesSucceeded += req.body.results.reduce((a,b) => b ? a + 1 : a, 0);
           uq.accuracy = 100 * uq.timesSucceeded / uq.timesAttempted;
@@ -203,9 +234,6 @@ router.post('/alexa', (req, res) => {
             where: {QuestionId: req.body.ids[i]}
           }
         ).then(uq => {
-          if (uq.timesAttempted === null) uq.timesAttempted = 0;
-          if (uq.timesSucceeded === null) uq.timesSucceeded = 0;
-
           uq.timesAttempted++;
           if (req.body.results[i] === true) uq.timesSucceeded++;
           uq.accuracy = 100 * uq.timesSucceeded / uq.timesAttempted;
