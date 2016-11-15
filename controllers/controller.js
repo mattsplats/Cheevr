@@ -32,8 +32,55 @@ setInterval(keepAlive, 50000);
 
 
 // Web API
-// Display page
+// View GET routes
 router.get('/', (req, res) => res.render('index'));
+
+// GET quiz data (accepts quiz id or quiz name)
+router.get('/api/quiz/:quiz', (req, res) => {
+  const input          = +req.params.quiz ? +req.params.quiz : req.params.quiz,    // Coerce to number if input string would not become NaN
+        whereCondition = typeof input === 'number' ? {id: input} : {name: input};  // Create object based on input type
+
+  models.Quiz.findOne(
+    {
+      where: whereCondition
+    }
+  ).then(quiz => 
+    models.User.findOne(
+      {
+        where: {id: quiz.OwnerId}
+      }
+    ).then(user => {
+      quiz.dataValues.username = user.username;
+      
+      quiz.getQuestions().then(questions => {
+        quiz.dataValues.questions = questions;
+        
+        res.json(quiz);
+      })
+    })
+  )
+});
+// GET user data (accepts user id or username)
+router.get('/api/user/:user', (req, res) => {
+  const input          = +req.params.user ? +req.params.user : req.params.user,        // Coerce to number if input string would not become NaN
+        whereCondition = typeof input === 'number' ? {id: input} : {username: input};  // Create object based on input type
+
+  models.User.findOne(
+    {
+      where: whereCondition
+    }
+  ).then(user => 
+    user.getQuizzes(
+      {
+        where: {OwnerId: user.id}
+      }
+    ).then(quizzes => {
+      user.dataValues.quizzes = quizzes;
+
+      res.json(user);
+    })
+  )
+});
 
 // Add new quiz
 router.post('/', (req, res) => {
@@ -71,6 +118,7 @@ router.post('/', (req, res) => {
 
 // Modify quiz
 router.put('/', (req, res) => {
+
   // Check input, if it passes run callback
   verifyName(req, res, () => {
 
@@ -157,10 +205,6 @@ router.get('/alexa/:quizName', (req, res) => {
           where: {QuizID: quiz[0].dataValues.id}
         }
       ).then(questions => {
-        if (quiz[0].dataValues.type === 'multipleChoice') {
-          questions.map(question => question.q += ` Is it: A. ${question.choiceA}, B. ${question.choiceB}, C. ${question.choiceC}, or D. ${question.choiceD}?`)
-        }
-
         res.json(
           {
             questions: questions,

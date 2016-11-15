@@ -17,7 +17,7 @@ const express    = require('express'),
 // Handlebars init
 app.engine('.hbs', hbs.engine);
 app.set('view engine', '.hbs');
-if (!process.env.PORT) app.enable('view cache');  // Disable view cache for local testing
+if (process.env.PORT) app.enable('view cache');  // Disable view cache for local testing
 
 // Body parser init
 app.use(bodyParser.json());
@@ -82,7 +82,7 @@ models.sequelize.query('SET FOREIGN_KEY_CHECKS = 0').then(() =>
     }
   ).then(quiz => {
     models.Question.create({
-      q: 'What is the best synonym for the word, accurate?',
+      q: 'For the word: accurate, what is the best synonym?',
       a: 'd',
       choiceA: 'recent',
       choiceB: 'better',
@@ -93,10 +93,10 @@ models.sequelize.query('SET FOREIGN_KEY_CHECKS = 0').then(() =>
     );
 
     models.Question.create({
-      q: 'What is the best synonym for the word, ban?',
+      q: 'For the word: prohibit, what is the best synonym?',
       a: 'b',
       choiceA: 'lose',
-      choiceB: 'prohibit',
+      choiceB: 'ban',
       choiceC: 'sigh',
       choiceD: 'reflect'
     }).then(question =>
@@ -104,7 +104,7 @@ models.sequelize.query('SET FOREIGN_KEY_CHECKS = 0').then(() =>
     );
 
     models.Question.create({
-      q: 'What is the best synonym for the word, definitely?',
+      q: 'For the word: definitely, what is the best synonym?',
       a: 'c',
       choiceA: 'quickly',
       choiceB: 'easily',
