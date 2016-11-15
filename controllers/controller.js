@@ -149,26 +149,35 @@ router.get('/alexa/:quizName', (req, res) => {
       replacements: [req.params.quizName],
       model: models.Quiz
     }
-  ).then(quiz =>
-    models.Question.findAll(
-      {
-        attributes: ['id', 'q', 'a', 'choiceA', 'choiceB', 'choiceC', 'choiceD'],
-        where: {QuizID: quiz[0].dataValues.id}
-      }
-    ).then(questions => {
-      if (quiz[0].dataValues.type === 'multipleChoice') {
-        questions.map(question => question.q += ` Is it: A. ${question.choiceA}, B. ${question.choiceB}, C. ${question.choiceC}, or D. ${question.choiceD}?`)
-      }
+  ).then(quiz => {
+    if (quiz.length > 0) {
+      models.Question.findAll(
+        {
+          attributes: ['id', 'q', 'a', 'choiceA', 'choiceB', 'choiceC', 'choiceD'],
+          where: {QuizID: quiz[0].dataValues.id}
+        }
+      ).then(questions => {
+        if (quiz[0].dataValues.type === 'multipleChoice') {
+          questions.map(question => question.q += ` Is it: A. ${question.choiceA}, B. ${question.choiceB}, C. ${question.choiceC}, or D. ${question.choiceD}?`)
+        }
 
+        res.json(
+          {
+            questions: questions,
+            name: quiz[0].dataValues.name,
+            type: quiz[0].dataValues.type
+          }
+        );
+      });
+
+    } else {
       res.json(
         {
-          quiz: questions,
-          name: quiz[0].dataValues.name,
-          type: quiz[0].dataValues.type
+          name: false
         }
-      )
-    })
-  );
+      );
+    }
+  });
 });
 
 // Update database with results
