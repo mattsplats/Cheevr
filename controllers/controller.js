@@ -11,6 +11,14 @@ const express = require('express'),
       sse     = new expsse(['keepAlive']),
       router  = express.Router();
 
+Array.prototype.indexOfProp = function (prop, value) {
+  for (var i = 0; i < this.length; i++) {
+    if (this[i][prop] === value) return i;
+  }
+
+  return -1;
+}
+
 // Input verification for POST/UPDATE routes
 function verifyName (req, res, success) {
   if (/[^a-z0-9.,:!?' ]/gi.test(req.body.name)) {
@@ -20,6 +28,20 @@ function verifyName (req, res, success) {
   } else {
     success();
   }
+}
+
+// Fisher-Yates shuffle
+function shuffle (arr) {
+  let j, temp;
+
+  for (let i = 0; i < arr.length - 1; i++) {
+    j = Math.floor(Math.random() * (arr.length - i)) + i;
+    temp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = temp;
+  }
+
+  return arr;
 }
 
 
@@ -54,7 +76,6 @@ router.get('/api/quiz/:quiz', (req, res) => {
       
       quiz.getQuestions().then(questions => {
         quiz.dataValues.questions = questions;
-        
         res.json(quiz);
       })
     })
@@ -70,20 +91,15 @@ router.get('/api/user/:user', (req, res) => {
       where: whereCondition
     }
   ).then(user => 
-    user.getQuizzes(
-      {
-        where: {OwnerId: user.id}
-      }
-    ).then(quizzes => {
+    user.getQuizzes().then(quizzes => {
       user.dataValues.quizzes = quizzes;
-
       res.json(user);
     })
   )
 });
 
 // Add new quiz
-router.post('/', (req, res) => {
+router.post('/api', (req, res) => {
   
   // Check input, if it passes run 2nd param
   verifyName(req, res, () => {
@@ -117,7 +133,7 @@ router.post('/', (req, res) => {
 });
 
 // Modify quiz
-router.put('/', (req, res) => {
+router.put('/api', (req, res) => {
 
   // Check input, if it passes run callback
   verifyName(req, res, () => {
@@ -164,7 +180,7 @@ router.put('/', (req, res) => {
 });
 
 // Delete quiz
-router.delete('/', (req, res) => {
+router.delete('/api', (req, res) => {
   models.Quiz.findOne(
     {
       where: {name: req.body.name}
@@ -192,7 +208,7 @@ router.delete('/', (req, res) => {
 // Respond to quiz requests
 router.get('/alexa/:quizName', (req, res) => {
 
-  models.sequelize.query(`SELECT id, name, type FROM Quizzes WHERE name SOUNDS LIKE ?`,
+  models.sequelize.query(`SELECT id, name, type, numberToAsk FROM Quizzes WHERE name SOUNDS LIKE ?`,
     {
       replacements: [req.params.quizName],
       model: models.Quiz
@@ -205,13 +221,74 @@ router.get('/alexa/:quizName', (req, res) => {
           where: {QuizID: quiz[0].dataValues.id}
         }
       ).then(questions => {
-        res.json(
-          {
-            questions: questions,
-            name: quiz[0].dataValues.name,
-            type: quiz[0].dataValues.type
+        const numToAsk = 1;  // quiz[0].dataValues.numberToAsk
+        questions = shuffle(questions);
+
+        // If creator elected to have users take the entire quiz, send a shuffled array of all questions to Alexa
+        if (numToAsk === 0) {
+          res.json(
+            {
+              questions: questions,
+              name: quiz[0].dataValues.name,
+              type: quiz[0].dataValues.type
+            }
+          );
+
+        // If we are selecting a subset of questions for users
+        } else {
+
+          // Get ids of all questions in quiz
+          let ids = [];
+          for (let i = 0; i < questions.length; i++) {
+            ids.push(questions[i].id);
           }
-        );
+          
+          // Get questions user has already taken
+          models.User.findOne(
+            {
+              where: {username: 'dummyUser'}
+            }
+          ).then(user => {
+            models.UserQuestion.findAll(
+              {
+                where: {QuestionId: {$in: ids}, UserId: user.id},
+                order: ['accuracy']
+              }
+            ).then(uq => {
+              let qArr = [],  // Questions to send
+                  i    = 0;
+
+              // Iterate through questions and push questions user has not taken to qArr
+              while (i < questions.length && qArr.length < numToAsk) {
+                
+                // If questions have not been taken (are not in UserQuestion) AND have not been selected already (are not in qArr)
+                if (uq.indexOfProp('id', ids[i]) === -1 && qArr.indexOfProp('id', ids[i]) === -1) qArr.push(questions[i]);
+
+                i++;
+              }
+
+              // If we need more questions to meet numToAsk
+              // Iterate through uq and push questions user did poorly on to qArr
+              while (qArr.length < numToAsk) {
+                
+                // Quadratic random number distribution (skews towards UserQuestions with low accuracy)
+                const rand  = Math.random(),
+                      index = Math.floor(rand * rand) * uq.length;
+
+                // If qArr does not have a question with chosen index's id, push question from questions where id === uq[index].id
+                if (qArr.indexOfProp('id', uq[index].id) === -1) qArr.push(questions[questions.indexOfProp('id', uq[index].id)]);
+              }
+
+              res.json(
+                {
+                  questions: qArr,
+                  name: quiz[0].dataValues.name,
+                  type: quiz[0].dataValues.type
+                }
+              );
+            })
+          })
+        }
       });
 
     } else {
