@@ -57,7 +57,7 @@ passport.use(new AmazonStrategy({
 app.use(passport.initialize());
 app.use(passport.session());
 app.get('/auth/amazon',
-  passport.authenticate('amazon'),  //, { scope: ['profile', 'postal_code'] }
+  passport.authenticate('amazon', { scope: ['profile'] }),
   function(req, res){
     // The request will be redirected to Amazon for authentication, so this
     // function will not be called.
