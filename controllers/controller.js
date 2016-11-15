@@ -221,7 +221,7 @@ router.get('/alexa/:quizName', (req, res) => {
           where: {QuizID: quiz[0].dataValues.id}
         }
       ).then(questions => {
-        const numToAsk = 1;  // quiz[0].dataValues.numberToAsk
+        const numToAsk = quiz[0].dataValues.numberToAsk;
         questions = shuffle(questions);
 
         // If creator elected to have users take the entire quiz, send a shuffled array of all questions to Alexa
