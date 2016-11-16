@@ -13,11 +13,11 @@
   <div class="parallax"><img src="/assets/images/diagmonds_@2X.png" alt="Change background for an original"></div>
 </div>
 <div class="container">
-  <div class="section">
+  <div class="section" id="createQuiz">
     <div class="row">
       <form class="col s12">
         <div class="row">
-    <div class="input-field col s12">
+    <div class="input-field col s6">
     <select id="questionType">
       <option value="" disabled selected>Choose your option</option>
       <option value="trueFalse">True or False</option>
@@ -33,9 +33,33 @@
   </div>
   </div>
 </div>
+
 <script>
+var createQuizzes={
+  trueFalseQuiz: function(){
+    $('.createQuiz').html("<div class="row"><form class="col s12"><div class="row"><div class="input-field col s6"><select id="questionType"><option value="" disabled selected>Choose your option</option></select><label>Type of Quiz</label></div></form><div class="row center"><a id="create-button" class="btn-large waves-effect waves-light light-green darken-2">Create</a></div></div></div>'")
+  }
+  multipleChoice: function(){
+
+  }
+}
   $('#create-button').on('click', function () {
     var questionType=$("#questionType").val().trim();
     console.log(questionType);
+    if(questionType===trueFalse){
+      createQuizzes.trueFalseQuiz();
+    } else if (questionType===multipleChoice) {
+      createQuizzes.multipleChoice();
+    }
   });
 </script>
+<div class="parallax-container valign-wrapper">
+  <div class="section no-pad-bot">
+    <div class="container">
+      <div class="row center">
+        <h5 class="header col s12 light">A modern responsive front-end framework based on Material Design</h5>
+      </div>
+    </div>
+  </div>
+  <div class="parallax"><img src="background2.jpg" alt="Unsplashed background img 2"></div>
+</div>
