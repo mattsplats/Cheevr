@@ -19,10 +19,27 @@ Array.prototype.indexOfProp = function (prop, value) {
   return -1;
 }
 
-// Input verification for POST/UPDATE routes
-function verifyName (req, res, success) {
+// User ID verification for GET(user)/POST/PUT/DELETE routes
+function authUser (req, res) {
+  // Set where condition based on environment
+  if (process.env.AMAZON_CLIENT_ID) {
+    if (req.session.passport) {
+      return { where: { AmazonId: req.session.passport.user }};
+
+    // If user is not logged in, deny request
+    } else {
+      res.json({ error: 'Authentication failed / not logged in' });
+    }
+
+  } else {
+    return { where: { displayName: 'Dummy User' }};
+  }
+}
+
+// Input verification for POST/PUT/DELETE routes
+function verifyQuizName (req, res, success) {
   if (/[^a-z0-9.,:!?' ]/gi.test(req.body.name)) {
-    res.json({status: 1});  // Status 1: string contains invalid characters
+    res.json({ status: 1} );  // Status 1: string contains invalid characters
 
   // If all tests pass
   } else {
@@ -59,8 +76,8 @@ router.get('/', (req, res) => res.render('index'));
 
 // GET quiz data (accepts quiz id or quiz name)
 router.get('/api/quiz/:quiz', (req, res) => {
-  const input          = +req.params.quiz ? +req.params.quiz : req.params.quiz,    // Coerce to number if input string would not become NaN
-        whereCondition = typeof input === 'number' ? {id: input} : {name: input};  // Create object based on input type
+  const input          = +req.params.quiz ? +req.params.quiz : req.params.quiz,        // Coerce to number if input string would not become NaN
+        whereCondition = typeof input === 'number' ? { id: input } : { name: input };  // Create object based on input type
 
   models.Quiz.findOne(whereCondition).then(quiz => 
     models.User.findOne({ id: quiz.OwnerId }).then(user => {
@@ -75,128 +92,149 @@ router.get('/api/quiz/:quiz', (req, res) => {
 });
 
 // GET user data (accepts user id or displayName)
-router.get('/api/user/:user', (req, res) => {
-  console.log(req.session);
+router.get('/api/user', (req, res) => {
+  const whereCondition = authUser(req, res);
 
-  const input          = +req.params.user ? +req.params.user : req.params.user,        // Coerce to number if input string would not become NaN
-        whereCondition = typeof input === 'number' ? {id: input} : {AmazonId: input};  // Create object based on input type
-
-  models.User.findOne(whereCondition).then(user => 
-    user.getQuizzes(
-      {
-        order: 'UserQuiz.updatedAt DESC'  // Get in order of last quiz taken
+  if (whereCondition) {
+    models.User.findOne(whereCondition).then(user => {
+      if (user) {
+        user.getQuizzes(
+          {
+            order: 'UserQuiz.updatedAt DESC'  // Get in order of last quiz taken
+          }
+        ).then(quizzes => {
+          user.dataValues.quizzes = quizzes;
+          res.json(user);
+        })
+      
+      } else {
+        res.json({ error: 'No user by that ID' });
       }
-    ).then(quizzes => {
-      user.dataValues.quizzes = quizzes.sort();
-      res.json(user);
     })
-  )
+  }
 });
 
 // Add new quiz
 router.post('/api', (req, res) => {
-
-  console.log(req.session);
-
-  // Find dummy user for local development, user by AmazonId for production
-  const whereCondition = process.env.AMAZON_CLIENT_ID ? {where: {AmazonId: req.session.AmazonId}} : {where: {displayName: 'Dummy User'}};
+  const whereCondition = authUser(req, res);
   
-  // Check input, if it passes run 2nd param
-  verifyName(req, res, () => {
+  if (whereCondition) {
 
-    // Add new quiz to current user
-    models.User.findOne(whereCondition).then(user => 
-      models.Quiz.create({
-        name: req.body.name,
-        type: req.body.type,
-        OwnerId: user.id,
-        numberToAsk: req.body.numberToAsk
+    // Check input, if it passes run 2nd param
+    verifyQuizName(req, res,  () => {
+
+      // Add new quiz to current user
+      models.User.findOne(whereCondition).then(user => {
+        if (user) {
+          models.Quiz.create({
+            name: req.body.name,
+            type: req.body.type,
+            OwnerId: user.id,
+            numberToAsk: req.body.numberToAsk
+          }).then(quiz => {
+            for (var i = 0; i < req.body.questions.length; i++) {
+              models.Question.create({
+                q: req.body.questions[i].q,
+                a: req.body.questions[i].a,
+                choiceA: req.body.questions[i].choiceA,
+                choiceB: req.body.questions[i].choiceB,
+                choiceC: req.body.questions[i].choiceC,
+                choiceD: req.body.questions[i].choiceD
+              }).then(question => quiz.addQuestion(question))
+            }
+          }).then(() => 
+            res.json({ status: 0 })  // Status 0: OK
+          );
+
+        } else {
+          res.json({ error: 'No user by that ID' });
+        }
       })
-    ).then(quiz => {
-      for (var i = 0; i < req.body.quiz.length; i++) {
-        models.Question.create({
-          q: req.body.quiz[i].q,
-          a: req.body.quiz[i].a,
-          choiceA: req.body.quiz[i].choiceA,
-          choiceB: req.body.quiz[i].choiceB,
-          choiceC: req.body.quiz[i].choiceC,
-          choiceD: req.body.quiz[i].choiceD
-        }).then(question => quiz.addQuestion(question))
-      }
-    }).then(() => 
-      res.json({status: 0})  // Status 0: OK
-    )
-  })
+    })
+  }
 });
 
 // Modify quiz
 router.put('/api', (req, res) => {
+  const whereCondition = authUser(req, res);
+  
+  if (whereCondition) {
 
-  // Find dummy user for local development, user by AmazonId for production
-  const whereCondition = process.env.AMAZON_CLIENT_ID ? {where: {AmazonId: req.session.AmazonId}} : {where: {displayName: 'Dummy User'}};
+    // Check input, if it passes run callback
+    verifyQuizName(req, res, () => {
 
-  // Check input, if it passes run callback
-  verifyName(req, res, () => {
-
-    // Update quiz for current user
-    models.User.findOne(whereCondition).then(user => 
-      models.Quiz.findOne(
-        {
-          where: {id: req.body.id}
-        }
-      ).then(quiz => {
-        
-        // Update Quiz table
-        quiz.update({
-          name: req.body.name,
-          type: req.body.type,
-          numberToAsk: req.body.numberToAsk
-        }).then(() => 
-          models.Question.destroy(
-            {
-              where: {QuizId: quiz.id}
+      // Update quiz for current user
+      models.User.findOne(whereCondition).then(user => {
+        if (user) {
+          models.Quiz.findOne({
+            where: {
+              id: req.body.id,
+              OwnerId: user.id
             }
+          }).then(quiz => {
+            
+            // Update Quiz table
+            quiz.update({
+              name: req.body.name,
+              type: req.body.type,
+              numberToAsk: req.body.numberToAsk
+            }).then(() => 
+              models.Question.destroy({
+                where: { QuizId: quiz.id }
+              })
+            ).then(() => {
+              for (var i = 0; i < req.body.questions.length; i++) {
+                models.Question.create({
+                  q: req.body.questions[i].q,
+                  a: req.body.questions[i].a,
+                  choiceA: req.body.questions[i].choiceA,
+                  choiceB: req.body.questions[i].choiceB,
+                  choiceC: req.body.questions[i].choiceC,
+                  choiceD: req.body.questions[i].choiceD
+                }).then(question => quiz.addQuestion(question))
+              }
+            })
+          }).then(() => 
+            res.json({ status: 0} )  // Status 0: OK
           )
-        ).then(() => {
-          for (var i = 0; i < req.body.quiz.length; i++) {
-            models.Question.create({
-              q: req.body.quiz[i].q,
-              a: req.body.quiz[i].a,
-              choiceA: req.body.quiz[i].choiceA,
-              choiceB: req.body.quiz[i].choiceB,
-              choiceC: req.body.quiz[i].choiceC,
-              choiceD: req.body.quiz[i].choiceD
-            }).then(question => quiz.addQuestion(question))
-          }
-        })
+        
+        } else {
+          res.json({ error: 'No user by that ID' });
+        }
       })
-    ).then(() => 
-      res.json({status: 0})  // Status 0: OK
-    )
-  })
+    })
+  }
 });
 
 // Delete quiz
 router.delete('/api', (req, res) => {
-  models.Quiz.findOne(
-    {
-      where: {name: req.body.name}
-    }
-  ).then(quiz => 
-     models.Question.destroy(
-      {
-        where: {QuizId: quiz.id}
+  const whereCondition = authUser(req, res);
+  
+  if (whereCondition) {
+    models.User.findOne(whereCondition).then(user => {
+      if (user) {
+        models.Quiz.findOne({
+          where: {
+            name: req.body.name,
+            OwnerId: user.id
+          }
+        }).then(quiz => 
+          models.Question.destroy({
+            where: { QuizId: quiz.id }
+          })
+        ).then(() =>
+          models.Quiz.destroy({
+            where: { name: req.body.name }
+          })
+        ).then(() =>
+          res.json({ status: 0 })  // Status 0: OK
+        );
+
+      } else {
+        res.json({ error: 'No user by that ID' });
       }
-    )
-  ).then(() =>
-    models.Quiz.destroy(
-      {
-        where: {name: req.body.name}
-      }
-    )
-  ).then(result =>
-    res.json({result: result})
-  );
+    });
+  }
 });
 
 
