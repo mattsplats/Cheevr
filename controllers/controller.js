@@ -91,8 +91,12 @@ router.get('/api/user/:user', (req, res) => {
       where: whereCondition
     }
   ).then(user => 
-    user.getQuizzes().then(quizzes => {
-      user.dataValues.quizzes = quizzes;
+    user.getQuizzes(
+      {
+        order: 'UserQuiz.updatedAt DESC'  // Get in order of last quiz taken
+      }
+    ).then(quizzes => {
+      user.dataValues.quizzes = quizzes.sort();
       res.json(user);
     })
   )
@@ -113,7 +117,8 @@ router.post('/api', (req, res) => {
       models.Quiz.create({
         name: req.body.name,
         type: req.body.type,
-        OwnerId: user.id
+        OwnerId: user.id,
+        numberToAsk: req.body.numberToAsk
       })
     ).then(quiz => {
       for (var i = 0; i < req.body.quiz.length; i++) {
@@ -154,6 +159,7 @@ router.put('/api', (req, res) => {
         quiz.update({
           name: req.body.name,
           type: req.body.type,
+          numberToAsk: req.body.numberToAsk
         }).then(() => 
           models.Question.destroy(
             {
@@ -281,7 +287,7 @@ router.get('/alexa/:quizName', (req, res) => {
 
               res.json(
                 {
-                  questions: qArr,
+                  questions: shuffle(qArr),
                   name: quiz[0].dataValues.name,
                   type: quiz[0].dataValues.type
                 }
