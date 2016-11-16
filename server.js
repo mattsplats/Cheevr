@@ -56,11 +56,9 @@ if (process.env.AMAZON_CLIENT_ID) {
       callbackURL: "https://alexaquiz.herokuapp.com/auth/amazon/callback"
     },
     (accessToken, refreshToken, profile, done) => {  // Executed when user data is returned from Amazon
-      models.User.findOrCreate(
-        { 
-          where: { AmazonId: profile.id }
-        }
-      ).spread((user, wasCreated) => {
+      models.User.findOrCreate({ 
+        where: { AmazonId: profile.id }
+      }).spread((user, wasCreated) => {
         if (!user) return done(null, false);
 
         else {

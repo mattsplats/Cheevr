@@ -3,6 +3,7 @@
 // Modules
 const express = require('express'),
       expsse  = require('express-sse'),
+      rp      = require('request-promise'),
 
       // Local dependencies
       models  = require('../models'),
@@ -326,71 +327,87 @@ router.get('/alexa/:quizName', (req, res) => {
 
 // Update database with results
 router.post('/alexa', (req, res) => {
-  
-  // Send live updates to webpage
-  sse.send(req.body);
+  if (req.body.accessToken) {
+    const options = {
+      uri: 'https://api.amazon.com/user/profile?access_token=' + req.body.accessToken,
+      json: true
+    };
+    
+    rp(options).then(profile => {
 
-  models.User.findOne({ where: { displayName: 'Dummy User' }}).then(user => {
+      models.User.findOrCreate({
+        where: {
+          AmazonId: profile.user_id,
+          displayName: profile.name
+        }
+      }).then(user => {
 
-    // Update Quiz table
-    models.Quiz.findOne({ where: { name: req.body.name }}).then(quiz => {
-      
-      quiz.timesAttempted += req.body.results.length;
-      quiz.timesSucceeded += req.body.results.reduce((a,b) => b ? a + 1 : a, 0);
-      quiz.accuracy = 100 * quiz.timesSucceeded / quiz.timesAttempted;
+        // Update Quiz table
+        models.Quiz.findOne({ where: { name: req.body.name }}).then(quiz => {
+          
+          quiz.timesAttempted += req.body.results.length;
+          quiz.timesSucceeded += req.body.results.reduce((a,b) => b ? a + 1 : a, 0);
+          quiz.accuracy = 100 * quiz.timesSucceeded / quiz.timesAttempted;
 
-      models.Quiz.update(
-        {
-          timesAttempted: quiz.timesAttempted,
-          timesSucceeded: quiz.timesSucceeded,
-          accuracy: quiz.accuracy
-        },
-        { where: { id: quiz.id }
+          models.Quiz.update(
+            {
+              timesAttempted: quiz.timesAttempted,
+              timesSucceeded: quiz.timesSucceeded,
+              accuracy: quiz.accuracy
+            },
+            { where: { id: quiz.id }
+          });
+
+          // Update UserQuiz table
+          quiz.addUser(user).then(() => {
+            models.UserQuiz.findOne({ where: { QuizId: quiz.id }}).then(uq => {
+              uq.timesAttempted += req.body.results.length;
+              uq.timesSucceeded += req.body.results.reduce((a,b) => b ? a + 1 : a, 0);
+              uq.accuracy = 100 * uq.timesSucceeded / uq.timesAttempted;
+
+              models.UserQuiz.update(
+                {
+                  timesAttempted: uq.timesAttempted,
+                  timesSucceeded: uq.timesSucceeded,
+                  accuracy: uq.accuracy
+                },
+                { where: { QuizId: quiz.id }
+              });
+            })
+          })
+        });
+
+        // Update UserQuestion table
+        user.addQuestions(req.body.ids).then(() => {
+          for (let i = 0; i < req.body.ids.length; i++) {
+            models.UserQuestion.findOne({ where: { QuestionId: req.body.ids[i] }}).then(uq => {
+              uq.timesAttempted++;
+              if (req.body.results[i] === true) uq.timesSucceeded++;
+              uq.accuracy = 100 * uq.timesSucceeded / uq.timesAttempted;
+
+              models.UserQuestion.update(
+                {
+                  timesAttempted: uq.timesAttempted,
+                  timesSucceeded: uq.timesSucceeded,
+                  accuracy: uq.accuracy
+                },
+                { where: { QuestionId: req.body.ids[i] }
+              });
+            })
+          }
+        })
       });
 
-      // Update UserQuiz table
-      quiz.addUser(user).then(() => {
-        models.UserQuiz.findOne({ where: { QuizId: quiz.id }}).then(uq => {
-          uq.timesAttempted += req.body.results.length;
-          uq.timesSucceeded += req.body.results.reduce((a,b) => b ? a + 1 : a, 0);
-          uq.accuracy = 100 * uq.timesSucceeded / uq.timesAttempted;
+      // Send live updates to webpage
+      sse.send(req.body);
 
-          models.UserQuiz.update(
-            {
-              timesAttempted: uq.timesAttempted,
-              timesSucceeded: uq.timesSucceeded,
-              accuracy: uq.accuracy
-            },
-            { where: { QuizId: quiz.id }
-          });
-        })
-      })
+      // Respond to XHR request
+      res.json({ status: 0 });
     });
 
-    // Update UserQuestion table
-    user.addQuestions(req.body.ids)
-    .then(() => {
-      for (let i = 0; i < req.body.ids.length; i++) {
-        models.UserQuestion.findOne({ where: { QuestionId: req.body.ids[i] }}).then(uq => {
-          uq.timesAttempted++;
-          if (req.body.results[i] === true) uq.timesSucceeded++;
-          uq.accuracy = 100 * uq.timesSucceeded / uq.timesAttempted;
-
-          models.UserQuestion.update(
-            {
-              timesAttempted: uq.timesAttempted,
-              timesSucceeded: uq.timesSucceeded,
-              accuracy: uq.accuracy
-            },
-            { where: { QuestionId: req.body.ids[i] }
-          });
-        })
-      }
-    })
-  });
-
-  // Respond to XHR request
-  res.json({ status: 0 });
+  } else {
+    res.json({ error: 'Authentication failed / not logged in' });
+  }
 });
 
 

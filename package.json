@@ -19,6 +19,8 @@
     "mysql": "^2.11.1",
     "passport": "^0.3.2",
     "passport-amazon": "^1.0.0",
+    "request": "^2.78.0",
+    "request-promise": "^4.1.1",
     "sequelize": "^3.24.8"
   },
   "devDependencies": {},
