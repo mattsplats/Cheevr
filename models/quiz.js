@@ -4,6 +4,10 @@ module.exports = function(sequelize, DataTypes) {
     name: DataTypes.STRING,
     type: DataTypes.STRING,
     OwnerId: DataTypes.INTEGER,
+    numberToAsk: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
+    },
     timesAttempted: {
       type: DataTypes.INTEGER,
       defaultValue: 0
