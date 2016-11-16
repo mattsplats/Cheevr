@@ -99,12 +99,14 @@ models.sequelize.query('SET FOREIGN_KEY_CHECKS = 0').then(() =>
       {
         name: 'capitals',
         type: 'trueFalse',
-        OwnerId: 1
+        OwnerId: 1,
+        OwnerDisplayName: 'Dummy User'
       },
       {
         name: 'vocab',
         type: 'multipleChoice',
-        OwnerId: 1
+        OwnerId: 1,
+        OwnerDisplayName: 'Dummy User'
       }
     ]
   },

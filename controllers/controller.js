@@ -79,23 +79,26 @@ router.get('/createquiz', (req, res) => res.render('layouts/createquiz'));
 router.get('/gettingstarted', (req, res) => res.render('layouts/gettingstarted'));
 
 // GET quiz data (accepts quiz id or quiz name)
-router.get('/api/quiz/:quiz', (req, res) => {
-  const input          = +req.params.quiz ? +req.params.quiz : req.params.quiz,        // Coerce to number if input string would not become NaN
-        whereCondition = typeof input === 'number' ? { id: input } : { name: input };  // Create object based on input type
+router.get('/api/quiz/:quizName', (req, res) => {
+  const input          = +req.params.quizName ? +req.params.quizName : req.params.quizName,  // Coerce to number if input string would not become NaN
+        whereCondition = typeof input === 'number' ? { id: input } : { name: input };        // Create object based on input type
 
   models.Quiz.findOne(whereCondition).then(quiz =>
-    models.User.findOne({ id: quiz.OwnerId }).then(user => {
-      quiz.dataValues.displayName = user.displayName;
-
-      quiz.getQuestions().then(questions => {
-        quiz.dataValues.questions = questions;
-        res.json(quiz);
-      })
+    quiz.getQuestions().then(questions => {
+      quiz.dataValues.questions = questions;
+      res.json(quiz);
     })
-  )
+  );
 });
 
-// GET user data (accepts user id or displayName)
+// GET quiz search
+router.get('/api/search/:quizName', (req, res) => 
+  models.Quiz.findAll({ where: { name: { $like: `%${req.params.quizName}%` }}}).then(quizzes =>
+    res.json(quizzes)
+  )
+);
+
+// GET user data
 router.get('/api/user', (req, res) => {
   const whereCondition = authUser(req, res);
 
@@ -134,6 +137,7 @@ router.post('/api', (req, res) => {
             name: req.body.name,
             type: req.body.type,
             OwnerId: user.id,
+            OwnerDisplayName: user.displayName,
             numberToAsk: req.body.numberToAsk
           }).then(quiz => {
             for (var i = 0; i < req.body.questions.length; i++) {
@@ -181,7 +185,8 @@ router.put('/api', (req, res) => {
             quiz.update({
               name: req.body.name,
               type: req.body.type,
-              numberToAsk: req.body.numberToAsk
+              numberToAsk: req.body.numberToAsk,
+              OwnerDisplayName: user.displayName
             }).then(() =>
               models.Question.destroy({
                 where: { QuizId: quiz.id }
@@ -331,12 +336,14 @@ router.get('/alexa/:quizName', (req, res) => {
 // Update database with results
 router.post('/alexa', (req, res) => {
   if (req.body.accessToken) {
+
     const options = {
       uri: 'https://api.amazon.com/user/profile?access_token=' + req.body.accessToken,
       json: true
     };
 
     rp(options).then(profile => {
+      console.log(profile);
 
       models.User.findOrCreate({
         where: {
