@@ -76,8 +76,10 @@ router.get('/api/quiz/:quiz', (req, res) => {
 
 // GET user data (accepts user id or displayName)
 router.get('/api/user/:user', (req, res) => {
+  console.log(req.session);
+
   const input          = +req.params.user ? +req.params.user : req.params.user,        // Coerce to number if input string would not become NaN
-        whereCondition = typeof input === 'number' ? {id: input} : {displayName: input};  // Create object based on input type
+        whereCondition = typeof input === 'number' ? {id: input} : {AmazonId: input};  // Create object based on input type
 
   models.User.findOne(whereCondition).then(user => 
     user.getQuizzes(
