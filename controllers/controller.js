@@ -39,7 +39,7 @@ function authUser (req, res) {
 // Input verification for POST/PUT/DELETE routes
 function verifyQuizName (req, res, success) {
   if (/[^a-z0-9.,:!?' ]/gi.test(req.body.name)) {
-    res.json({ status: 1} );  // Status 1: string contains invalid characters
+    res.json({ status: 1});  // Status 1: string contains invalid characters
 
   // If all tests pass
   } else {
@@ -195,7 +195,7 @@ router.put('/api', (req, res) => {
               }
             })
           }).then(() => 
-            res.json({ status: 0} )  // Status 0: OK
+            res.json({ status: 0})  // Status 0: OK
           )
         
         } else {
@@ -219,13 +219,9 @@ router.delete('/api', (req, res) => {
             OwnerId: user.id
           }
         }).then(quiz => 
-          models.Question.destroy({
-            where: { QuizId: quiz.id }
-          })
+          models.Question.destroy({ where: { QuizId: quiz.id }})
         ).then(() =>
-          models.Quiz.destroy({
-            where: { name: req.body.name }
-          })
+          models.Quiz.destroy({ where: { name: req.body.name }})
         ).then(() =>
           res.json({ status: 0 })  // Status 0: OK
         );
@@ -255,7 +251,7 @@ router.get('/alexa/:quizName', (req, res) => {
       models.Question.findAll(
         {
           attributes: ['id', 'q', 'a', 'choiceA', 'choiceB', 'choiceC', 'choiceD'],
-          where: {QuizID: quiz[0].dataValues.id}
+          where: { QuizID: quiz[0].dataValues.id }
         }
       ).then(questions => {
         const numToAsk = quiz[0].dataValues.numberToAsk;
@@ -263,13 +259,11 @@ router.get('/alexa/:quizName', (req, res) => {
 
         // If creator elected to have users take the entire quiz, send a shuffled array of all questions to Alexa
         if (numToAsk === 0 || numToAsk >= questions.length) {
-          res.json(
-            {
-              questions: questions,
-              name: quiz[0].dataValues.name,
-              type: quiz[0].dataValues.type
-            }
-          );
+          res.json({
+            questions: questions,
+            name: quiz[0].dataValues.name,
+            type: quiz[0].dataValues.type
+          });
 
         // If we are selecting a subset of questions for users
         } else {
@@ -281,17 +275,14 @@ router.get('/alexa/:quizName', (req, res) => {
           }
           
           // Get questions user has already taken
-          models.User.findOne(
-            {
-              where: {displayName: 'Dummy User'}
-            }
-          ).then(user => {
-            models.UserQuestion.findAll(
-              {
-                where: {QuestionId: {$in: ids}, UserId: user.id},
-                order: ['accuracy']
-              }
-            ).then(uq => {
+          models.User.findOne({ where: { displayName: 'Dummy User' }}).then(user => {
+            models.UserQuestion.findAll({
+              where: {
+                QuestionId: { $in: ids },
+                UserId: user.id
+              },
+              order: ['accuracy']
+            }).then(uq => {
               let qArr = [],  // Questions to send
                   i    = 0;
 
@@ -316,13 +307,11 @@ router.get('/alexa/:quizName', (req, res) => {
                 if (qArr.indexOfProp('id', uq[index].id) === -1) qArr.push(questions[questions.indexOfProp('id', uq[index].id)]);
               }
 
-              res.json(
-                {
-                  questions: shuffle(qArr),
-                  name: quiz[0].dataValues.name,
-                  type: quiz[0].dataValues.type
-                }
-              );
+              res.json({
+                questions: shuffle(qArr),
+                name: quiz[0].dataValues.name,
+                type: quiz[0].dataValues.type
+              });
             })
           })
         }
@@ -330,11 +319,7 @@ router.get('/alexa/:quizName', (req, res) => {
 
     // If no quiz was found
     } else {
-      res.json(
-        {
-          name: false
-        }
-      );
+      res.json({ name: false });
     }
   });
 });
@@ -345,50 +330,39 @@ router.post('/alexa', (req, res) => {
   // Send live updates to webpage
   sse.send(req.body);
 
-  // Update database  
-  models.User.findOne(
-    {
-      where: {displayName: 'Dummy User'}
-    }
-  ).then(user => {
+  models.User.findOne({ where: { displayName: 'Dummy User' }}).then(user => {
 
-    // Update Quiz tables
-    models.Quiz.findOne(
-      {
-        where: {name: req.body.name}
-      }
-    ).then(quiz => {
-      // Update Quiz table
+    // Update Quiz table
+    models.Quiz.findOne({ where: { name: req.body.name }}).then(quiz => {
+      
       quiz.timesAttempted += req.body.results.length;
       quiz.timesSucceeded += req.body.results.reduce((a,b) => b ? a + 1 : a, 0);
       quiz.accuracy = 100 * quiz.timesSucceeded / quiz.timesAttempted;
 
-      models.Quiz.update({
-        timesAttempted: quiz.timesAttempted,
-        timesSucceeded: quiz.timesSucceeded,
-        accuracy: quiz.accuracy
-      }, {
-        where: {id: quiz.id}
-      })
+      models.Quiz.update(
+        {
+          timesAttempted: quiz.timesAttempted,
+          timesSucceeded: quiz.timesSucceeded,
+          accuracy: quiz.accuracy
+        },
+        { where: { id: quiz.id }
+      });
 
       // Update UserQuiz table
       quiz.addUser(user).then(() => {
-        models.UserQuiz.findOne(
-          {
-            where: {QuizId: quiz.id}
-          }
-        ).then(uq => {
+        models.UserQuiz.findOne({ where: { QuizId: quiz.id }}).then(uq => {
           uq.timesAttempted += req.body.results.length;
           uq.timesSucceeded += req.body.results.reduce((a,b) => b ? a + 1 : a, 0);
           uq.accuracy = 100 * uq.timesSucceeded / uq.timesAttempted;
 
-          models.UserQuiz.update({
-            timesAttempted: uq.timesAttempted,
-            timesSucceeded: uq.timesSucceeded,
-            accuracy: uq.accuracy
-          }, {
-            where: {QuizId: quiz.id}
-          })
+          models.UserQuiz.update(
+            {
+              timesAttempted: uq.timesAttempted,
+              timesSucceeded: uq.timesSucceeded,
+              accuracy: uq.accuracy
+            },
+            { where: { QuizId: quiz.id }
+          });
         })
       })
     });
@@ -397,29 +371,26 @@ router.post('/alexa', (req, res) => {
     user.addQuestions(req.body.ids)
     .then(() => {
       for (let i = 0; i < req.body.ids.length; i++) {
-        models.UserQuestion.findOne(
-          {
-            where: {QuestionId: req.body.ids[i]}
-          }
-        ).then(uq => {
+        models.UserQuestion.findOne({ where: { QuestionId: req.body.ids[i] }}).then(uq => {
           uq.timesAttempted++;
           if (req.body.results[i] === true) uq.timesSucceeded++;
           uq.accuracy = 100 * uq.timesSucceeded / uq.timesAttempted;
 
-          models.UserQuestion.update({
-            timesAttempted: uq.timesAttempted,
-            timesSucceeded: uq.timesSucceeded,
-            accuracy: uq.accuracy
-          }, {
-            where: {QuestionId: req.body.ids[i]}
-          })
+          models.UserQuestion.update(
+            {
+              timesAttempted: uq.timesAttempted,
+              timesSucceeded: uq.timesSucceeded,
+              accuracy: uq.accuracy
+            },
+            { where: { QuestionId: req.body.ids[i] }
+          });
         })
       }
     })
   });
 
   // Respond to XHR request
-  res.json({OK: true});
+  res.json({ status: 0 });
 });
 
 
