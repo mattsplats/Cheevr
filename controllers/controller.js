@@ -350,7 +350,7 @@ router.post('/alexa', (req, res) => {
           AmazonId: profile.user_id,
           displayName: profile.name
         }
-      }).then(user => {
+      }).spread((user, wasCreated) => {
 
         // Update Quiz table
         models.Quiz.findOne({ where: { name: req.body.name }}).then(quiz => {
