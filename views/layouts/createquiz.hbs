@@ -37,11 +37,12 @@
 
 <script>
 var createQuizzes={
-
   questions: [],
   answers: [],
   options: {},
   totalQuestions: 3,
+
+  //function to create a true or false quiz.
   trueFalseQuiz: function(){
     $("#createQuiz").html("<div class='row center'><form class='col s12'><div class='input-field col s8'><input id='quizName' type='text' class='validate'><label for='quizName'>Quiz Name</label></div></form></div>");
     for(i=0; i<createQuizzes.totalQuestions; i++){
@@ -72,8 +73,13 @@ var createQuizzes={
         questions: createQuizzes.questions,
       };
       console.log(newQuiz);
+      $.post(currentURL + '/api', newQuiz).done(function (data) {
+          console.log(data);
+          alert('New Quiz Created!');
+        });
     });
   },
+
   //function to create a multiple choice quiz.
   multipleChoice: function(){
     $("#createQuiz").html("<div class='row'><form class='col s12'><div class='input-field col s8'><input id='quizName' type='text' class='validate'><label for='quizName'>Quiz Name</label></div></form></div>");
@@ -121,9 +127,14 @@ var createQuizzes={
         questions: createQuizzes.questions,
       };
       console.log(newQuiz);
+      $.post(currentURL + '/api', newQuiz).done(function (data) {
+          console.log(data);
+          alert('New Quiz Created!');
+        });
     });
   }
-}
+};
+
   $('#create-button').on('click', function () {
     createQuizzes.questionType=$("#questionType").val().trim();
     console.log(createQuizzes.questionType);

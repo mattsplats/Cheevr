@@ -25,7 +25,6 @@ router.get('/createquiz', (req, res) => res.render('layouts/createquiz'));
 router.get('/gettingstarted', (req, res) => res.render('layouts/gettingstarted'));
 
 
-
 // Alexa API
 // Respond to quiz requests
 router.get('/alexa/:quizName', (req, res) => {
