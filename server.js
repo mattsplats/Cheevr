@@ -65,7 +65,7 @@ if (process.env.AMAZON_CLIENT_ID) {
 
         else {
           user.update({ displayName: profile.displayName }).then(user => 
-            done(null, user);
+            done(null, user)
           )
         }
       });
