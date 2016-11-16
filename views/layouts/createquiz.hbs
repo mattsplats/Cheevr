@@ -6,7 +6,6 @@
       <div class="row center">
         <h5 class="header col s12 light">At the moment you have the chance to create two types of quizzes true or false, or multiple choice.</h5>
       </div>
-      <br><br>
 
     </div>
   </div>
@@ -32,34 +31,106 @@
   </div>
   </div>
   </div>
+  <div class="section" id="buttonSection">
+  </div>
 </div>
 
 <script>
 var createQuizzes={
-  trueFalseQuiz: function(){
-    $('.createQuiz').html("<div class="row"><form class="col s12"><div class="row"><div class="input-field col s6"><select id="questionType"><option value="" disabled selected>Choose your option</option></select><label>Type of Quiz</label></div></form><div class="row center"><a id="create-button" class="btn-large waves-effect waves-light light-green darken-2">Create</a></div></div></div>'")
-  }
-  multipleChoice: function(){
 
+  questions: [],
+  answers: [],
+  options: {},
+  totalQuestions: 3,
+  trueFalseQuiz: function(){
+    $("#createQuiz").html("<div class='row center'><form class='col s12'><div class='input-field col s8'><input id='quizName' type='text' class='validate'><label for='quizName'>Quiz Name</label></div></form></div>");
+    for(i=0; i<createQuizzes.totalQuestions; i++){
+    $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='q"+i+"' type='text' class='validate'><label for='q"+i+"'>Question</label></div><div class='input-field col s4'><select id='a"+i+"'><option value='' disabled selected>Choose your option</option><option value='true'>True</option><option value='false'>False</option></select><label>Answer</label></div></form></div></div>");
+    $('select').material_select();
+    }
+    $('#buttonSection').append("<a id='addQuestion' class='btn-large waves-effect waves-light light-green darken-2'>+</a><a id='submitQuiz' class='btn-large waves-effect waves-light light-green darken-2'>Submit</a>");
+    $('#addQuestion').on('click', function(){
+      createQuizzes.totalQuestions++;
+      var extra=createQuizzes.totalQuestions-1;
+      $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='q"+extra+"' type='text' class='validate'><label for='q"+extra+"'>Question</label></div><div class='input-field col s4'><select id='a"+extra+"'><option value='' disabled selected>Choose your option</option><option value='true'>True</option><option value='false'>False</option></select><label>Answer</label></div></form></div></div>");
+      $('select').material_select();
+    });
+    $('#submitQuiz').on('click', function(){
+      for (a=0; a<createQuizzes.totalQuestions; a++){
+        var ques=$("#q"+a+"").val().trim();
+        var ans=$("#a"+a+"").val().trim();
+        var newQuestion={
+          q: ques,
+          a: ans,
+        }
+        createQuizzes.questions.push(newQuestion);
+      };
+      var newQuiz={
+        name: $("#quizName").val().trim(),
+        type: createQuizzes.questionType,
+        numberToAsk: 0,
+        questions: createQuizzes.questions,
+      };
+      console.log(newQuiz);
+    });
+  },
+  //function to create a multiple choice quiz.
+  multipleChoice: function(){
+    $("#createQuiz").html("<div class='row'><form class='col s12'><div class='input-field col s8'><input id='quizName' type='text' class='validate'><label for='quizName'>Quiz Name</label></div></form></div>");
+    for(i=0; i<createQuizzes.totalQuestions; i++){
+    $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='q"+i+"' type='text' class='validate'><label for='q"+i+"'>Question</label></div><div class='input-field col s4'><select id='a"+i+"'><option value='' disabled selected>Choose your option</option><option value='a'>A</option><option value='b'>B</option><option value='c'>C</option><option value='d'>D</option></select><label>Correct Answer</label></div></form></div></div>");
+    $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='choiceA"+i+"' type='text' class='validate'><label for='choiceA"+i+"'>Answer for option A</label></div></div>");
+    $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='choiceB"+i+"' type='text' class='validate'><label for='choiceB"+i+"'>Answer for option B</label></div></div>");
+    $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='choiceC"+i+"' type='text' class='validate'><label for='choiceC"+i+"'>Answer for option C</label></div></div>");
+    $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='choiceD"+i+"' type='text' class='validate'><label for='choiceA"+i+"'>Answer for option D</label></div></div>");
+    $('select').material_select();
+    }
+    $('#buttonSection').append("<a id='addQuestion' class='btn-large waves-effect waves-light light-green darken-2'>+</a><a id='submitQuiz' class='btn-large waves-effect waves-light light-green darken-2'>Submit</a>");
+    $('#addQuestion').on('click', function(){
+      createQuizzes.totalQuestions++;
+      var extra=createQuizzes.totalQuestions-1;
+      $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='q"+extra+"' type='text' class='validate'><label for='q"+extra+"'>Question</label></div><div class='input-field col s4'><select id='a"+extra+"'><option value='' disabled selected>Choose your option</option><option value='a'>A</option><option value='b'>B</option><option value='c'>C</option><option value='d'>D</option></select><label>Correct Answer</label></div></form></div></div>");
+      $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='choiceA"+extra+"' type='text' class='validate'><label for='choiceA"+extra+"'>Answer for option A</label></div></div>");
+      $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='choiceB"+extra+"' type='text' class='validate'><label for='choiceB"+extra+"'>Answer for option B</label></div></div>");
+      $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='choiceC"+extra+"' type='text' class='validate'><label for='choiceC"+extra+"'>Answer for option C</label></div></div>");
+      $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='choiceD"+extra+"' type='text' class='validate'><label for='choiceA"+extra+"'>Answer for option D</label></div></div>");
+      $('select').material_select();
+    });
+    $('#submitQuiz').on('click', function(){
+      for (a=0; a<createQuizzes.totalQuestions; a++){
+        var ques=$("#q"+a+"").val().trim();
+        var ans=$("#a"+a+"").val().trim();
+        var choiceA=$("#choiceA"+a+"").val().trim();
+        var choiceB=$("#choiceB"+a+"").val().trim();
+        var choiceC=$("#choiceC"+a+"").val().trim();
+        var choiceD=$("#choiceD"+a+"").val().trim();
+        var newQuestion={
+          q: ques,
+          a: ans,
+          choiceA: choiceA,
+          choiceB: choiceB,
+          choiceC: choiceC,
+          choiceD: choiceD
+        }
+        createQuizzes.questions.push(newQuestion);
+      };
+      var newQuiz={
+        name: $("#quizName").val().trim(),
+        type: createQuizzes.questionType,
+        numberToAsk: 0,
+        questions: createQuizzes.questions,
+      };
+      console.log(newQuiz);
+    });
   }
 }
   $('#create-button').on('click', function () {
-    var questionType=$("#questionType").val().trim();
-    console.log(questionType);
-    if(questionType===trueFalse){
+    createQuizzes.questionType=$("#questionType").val().trim();
+    console.log(createQuizzes.questionType);
+    if(createQuizzes.questionType==='trueFalse'){
       createQuizzes.trueFalseQuiz();
-    } else if (questionType===multipleChoice) {
+    } else if (createQuizzes.questionType==='multipleChoice') {
       createQuizzes.multipleChoice();
     }
   });
 </script>
-<div class="parallax-container valign-wrapper">
-  <div class="section no-pad-bot">
-    <div class="container">
-      <div class="row center">
-        <h5 class="header col s12 light">A modern responsive front-end framework based on Material Design</h5>
-      </div>
-    </div>
-  </div>
-  <div class="parallax"><img src="background2.jpg" alt="Unsplashed background img 2"></div>
-</div>
