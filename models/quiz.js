@@ -4,6 +4,7 @@ module.exports = function(sequelize, DataTypes) {
     name: DataTypes.STRING,
     type: DataTypes.STRING,
     OwnerId: DataTypes.INTEGER,
+    OwnerDisplayName: DataTypes.STRING,
     numberToAsk: {
       type: DataTypes.INTEGER,
       defaultValue: 0
