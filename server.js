@@ -44,34 +44,33 @@ if (process.env.PORT) {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  passport.use(new AmazonStrategy({
+  passport.use(new AmazonStrategy(
+    {
       clientID: process.env.AMAZON_CLIENT_ID,
       clientSecret:  process.env.AMAZON_CLIENT_SECRET,
       callbackURL: "https://alexaquiz.herokuapp.com/auth/amazon/callback"
     },
-    function(accessToken, refreshToken, profile, done) {
+    (accessToken, refreshToken, profile, done) => {
       models.User.findOrCreate(
-        { where: { AmazonId: profile.id }}
+        { 
+          where: { AmazonId: profile.id }
+        }
       ).spread((user, wasCreated) => {
         if (!user) { return done(null, false); }
+
         return done(null, user);
       });
-      // process.nextTick(function () {
-      //   return done(null, profile);
-      // });
     }
   ));
 
-  passport.serializeUser(function(user, done) {
-    console.log('User:', user);
-    done(null, user.AmazonId);
+  passport.serializeUser((user, done) => {
+    done(null, user.AmazonId)
   });
 
-  passport.deserializeUser(function(AmazonId, done) {
-    console.log('AmazonId:', AmazonId);
+  passport.deserializeUser((AmazonId, done) => {
     models.User.findOne({ AmazonId: AmazonId }).then(user =>
       done(null, user)
-    );
+    )
   });
   
   app.get('/auth/amazon',          passport.authenticate('amazon', {scope: ['profile']}));
