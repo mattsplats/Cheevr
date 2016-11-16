@@ -30,14 +30,15 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.text());
 
 // Passport init
-if (process.env.PORT) {
+if (process.env.AMAZON_CLIENT_ID) {
   
   // MySQL session storage
   app.use(session(
     {
       secret: process.env.SESSION_SECRET,
-      resave: true,
-      saveUninitialized: true,
+      cookie: { maxAge: 60000 },
+      resave: false,
+      saveUninitialized: false,
       store: new SequelizeStore({
         db: models.sequelize
       })
@@ -55,15 +56,18 @@ if (process.env.PORT) {
       callbackURL: "https://alexaquiz.herokuapp.com/auth/amazon/callback"
     },
     (accessToken, refreshToken, profile, done) => {  // Executed when user data is returned from Amazon
-      console.log(profile);
       models.User.findOrCreate(
         { 
           where: { AmazonId: profile.id }
         }
       ).spread((user, wasCreated) => {
-        if (!user) { return done(null, false); }
+        if (!user) return done(null, false);
 
-        return done(null, user);
+        else {
+          user.update({ displayName: profile.displayName }).then(user => 
+            done(null, user);
+          )
+        }
       });
     }
   ));
@@ -91,7 +95,8 @@ models.sequelize.query('SET FOREIGN_KEY_CHECKS = 0').then(() =>
 
 // Create dummy user
   .then(() => models.User.create({
-    username: 'dummyUser',
+    AmazonId: 'nothing to see here',
+    displayName: 'Dummy User',
     Quizzes: [
       {
         name: 'capitals',

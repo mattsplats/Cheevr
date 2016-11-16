@@ -64,7 +64,7 @@ router.get('/api/quiz/:quiz', (req, res) => {
 
   models.Quiz.findOne(whereCondition).then(quiz => 
     models.User.findOne({ id: quiz.OwnerId }).then(user => {
-      quiz.dataValues.username = user.username;
+      quiz.dataValues.displayName = user.displayName;
       
       quiz.getQuestions().then(questions => {
         quiz.dataValues.questions = questions;
@@ -74,10 +74,10 @@ router.get('/api/quiz/:quiz', (req, res) => {
   )
 });
 
-// GET user data (accepts user id or username)
+// GET user data (accepts user id or displayName)
 router.get('/api/user/:user', (req, res) => {
   const input          = +req.params.user ? +req.params.user : req.params.user,        // Coerce to number if input string would not become NaN
-        whereCondition = typeof input === 'number' ? {id: input} : {username: input};  // Create object based on input type
+        whereCondition = typeof input === 'number' ? {id: input} : {displayName: input};  // Create object based on input type
 
   models.User.findOne(whereCondition).then(user => 
     user.getQuizzes(
@@ -93,16 +93,17 @@ router.get('/api/user/:user', (req, res) => {
 
 // Add new quiz
 router.post('/api', (req, res) => {
+
+  console.log(req.session);
+
+  // Find dummy user for local development, user by AmazonId for production
+  const whereCondition = process.env.AMAZON_CLIENT_ID ? {where: {AmazonId: req.session.AmazonId}} : {where: {displayName: 'Dummy User'}};
   
   // Check input, if it passes run 2nd param
   verifyName(req, res, () => {
 
     // Add new quiz to current user
-    models.User.findOne(
-      {
-        where: {username: 'dummyUser'}
-      }
-    ).then(user => 
+    models.User.findOne(whereCondition).then(user => 
       models.Quiz.create({
         name: req.body.name,
         type: req.body.type,
@@ -129,15 +130,14 @@ router.post('/api', (req, res) => {
 // Modify quiz
 router.put('/api', (req, res) => {
 
+  // Find dummy user for local development, user by AmazonId for production
+  const whereCondition = process.env.AMAZON_CLIENT_ID ? {where: {AmazonId: req.session.AmazonId}} : {where: {displayName: 'Dummy User'}};
+
   // Check input, if it passes run callback
   verifyName(req, res, () => {
 
     // Update quiz for current user
-    models.User.findOne(
-      {
-        where: {username: 'dummyUser'}
-      }
-    ).then(user => 
+    models.User.findOne(whereCondition).then(user => 
       models.Quiz.findOne(
         {
           where: {id: req.body.id}
@@ -209,6 +209,8 @@ router.get('/alexa/:quizName', (req, res) => {
       model: models.Quiz
     }
   ).then(quiz => {
+    
+    // If a quiz was found
     if (quiz.length > 0) {
       models.Question.findAll(
         {
@@ -241,7 +243,7 @@ router.get('/alexa/:quizName', (req, res) => {
           // Get questions user has already taken
           models.User.findOne(
             {
-              where: {username: 'dummyUser'}
+              where: {displayName: 'Dummy User'}
             }
           ).then(user => {
             models.UserQuestion.findAll(
@@ -286,6 +288,7 @@ router.get('/alexa/:quizName', (req, res) => {
         }
       });
 
+    // If no quiz was found
     } else {
       res.json(
         {
@@ -305,7 +308,7 @@ router.post('/alexa', (req, res) => {
   // Update database  
   models.User.findOne(
     {
-      where: {username: 'dummyUser'}
+      where: {displayName: 'Dummy User'}
     }
   ).then(user => {
 
