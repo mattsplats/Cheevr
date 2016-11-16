@@ -31,6 +31,8 @@ app.use(bodyParser.text());
 
 // Passport init
 if (process.env.PORT) {
+  
+  // MySQL session storage
   app.use(session(
     {
       secret: process.env.SESSION_SECRET,
@@ -38,19 +40,22 @@ if (process.env.PORT) {
       saveUninitialized: true,
       store: new SequelizeStore({
         db: models.sequelize
-      })}
+      })
+    }
   ));
 
   app.use(passport.initialize());
   app.use(passport.session());
 
+  // Authentication strategy
   passport.use(new AmazonStrategy(
     {
       clientID: process.env.AMAZON_CLIENT_ID,
       clientSecret:  process.env.AMAZON_CLIENT_SECRET,
       callbackURL: "https://alexaquiz.herokuapp.com/auth/amazon/callback"
     },
-    (accessToken, refreshToken, profile, done) => {
+    (accessToken, refreshToken, profile, done) => {  // Executed when user data is returned from Amazon
+      console.log(profile);
       models.User.findOrCreate(
         { 
           where: { AmazonId: profile.id }
@@ -63,10 +68,12 @@ if (process.env.PORT) {
     }
   ));
 
+  // AmazonId is stored when user authenticates
   passport.serializeUser((user, done) => {
     done(null, user.AmazonId)
   });
 
+  // User data pulled out of database on subsequent requests
   passport.deserializeUser((AmazonId, done) => {
     models.User.findOne({ AmazonId: AmazonId }).then(user =>
       done(null, user)

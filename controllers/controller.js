@@ -220,7 +220,7 @@ router.get('/alexa/:quizName', (req, res) => {
         questions = shuffle(questions);
 
         // If creator elected to have users take the entire quiz, send a shuffled array of all questions to Alexa
-        if (numToAsk === 0) {
+        if (numToAsk === 0 || numToAsk >= questions.length) {
           res.json(
             {
               questions: questions,
