@@ -53,7 +53,6 @@ if (process.env.PORT) {
       models.User.findOrCreate(
         { where: { AmazonId: profile.id }}
       ).spread((user, wasCreated) => {
-        if (err) { return done(err); }
         if (!user) { return done(null, false); }
         return done(null, user);
       });
