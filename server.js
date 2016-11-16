@@ -5,6 +5,7 @@ const express        = require('express'),
       exphbs         = require('express-handlebars'),
       bodyParser     = require('body-parser'),
       session        = require('express-session'),
+      SequelizeStore = require('connect-session-sequelize')(session.Store),
       passport       = require('passport'),
       AmazonStrategy = require('passport-amazon').Strategy,
 
@@ -32,7 +33,14 @@ app.use(bodyParser.text());
 
 // Passport init
 if (process.env.PORT) {
-  app.use(session({ secret: 'keyboard cat', cookie: { maxAge: 60000 }}));
+  app.use(session(
+    {
+      secret: 'keyboard cat',
+      cookie: {maxAge: 60000},
+      store: new SequelizeStore({
+        db: models.sequelize
+      })}
+  ));
 
   app.use(passport.initialize());
   app.use(passport.session());
