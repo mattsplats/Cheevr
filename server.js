@@ -17,7 +17,7 @@ const express    = require('express'),
 // Handlebars init
 app.engine('.hbs', hbs.engine);
 app.set('view engine', '.hbs');
-if (!process.env.PORT) app.enable('view cache');  // Disable view cache for local testing
+if (process.env.PORT) app.enable('view cache');  // Disable view cache for local testing
 
 // Body parser init
 app.use(bodyParser.json());
@@ -27,43 +27,94 @@ app.use(bodyParser.text());
 
 // Sequelize init
 // Drop all tables
-models.sequelize.query('SET FOREIGN_KEY_CHECKS = 0')
-.then(() => models.sequelize.sync({force:true}))
+models.sequelize.query('SET FOREIGN_KEY_CHECKS = 0').then(() => 
+  models.sequelize.sync({force:true}))
 
 // Create dummy user
-.then(() => models.User.create({
-  username: 'dummyUser',
-  Quizzes: [{
-    name: 'capitals',
-    type: 'trueFalse',
-    timesAttempted: 0,
-    timesSucceeded: 0,
-    accuracy: 0
-  }]
-},
-{
-  include: [models.Quiz]
-}))
+  .then(() => models.User.create({
+    username: 'dummyUser',
+    Quizzes: [
+      {
+        name: 'capitals',
+        type: 'trueFalse',
+        OwnerId: 1
+      },
+      {
+        name: 'vocab',
+        type: 'multipleChoice',
+        OwnerId: 1
+      }
+    ]
+  },
+  {
+    include: [models.Quiz]
+  })
+)
 
-// Create initial quiz
-.then(() => models.Quiz.findOne({where: {name: 'capitals'}})
-  
-  .then(quiz => models.Question.create({
-    q: 'Austin is the capital of Texas',
-    a: 'true',
-    timesAttempted: 0,
-    timesSucceeded: 0,
-    accuracy: 0
-  }).then(question => quiz.addQuestion(question))
+// Create true/false quiz
+.then(() => 
+  models.Quiz.findOne(
+    {
+      where: {name: 'capitals'}
+    }
+  ).then(quiz => {
+    models.Question.create({
+      q: 'Austin is the capital of Texas',
+      a: 'true'
+    }).then(question => 
+      quiz.addQuestion(question)
+    )
 
-  .then(() => models.Question.create({
-    q: 'Chicago is the capital of Illinois',
-    a: 'false',
-    timesAttempted: 0,
-    timesSucceeded: 0,
-    accuracy: 0
-  }).then(question => quiz.addQuestion(question))
-)))
+    models.Question.create({
+      q: 'Chicago is the capital of Illinois',
+      a: 'false'
+    }).then(question =>
+      quiz.addQuestion(question)
+    )
+  })
+)
+
+// Create multiple choice quiz
+.then(() => 
+  models.Quiz.findOne(
+    {
+      where: {name: 'vocab'}
+    }
+  ).then(quiz => {
+    models.Question.create({
+      q: 'For the word: accurate, what is the best synonym?',
+      a: 'd',
+      choiceA: 'recent',
+      choiceB: 'better',
+      choiceC: 'pleased',
+      choiceD: 'correct'
+    }).then(question => 
+      quiz.addQuestion(question)
+    );
+
+    models.Question.create({
+      q: 'For the word: prohibit, what is the best synonym?',
+      a: 'b',
+      choiceA: 'lose',
+      choiceB: 'ban',
+      choiceC: 'sigh',
+      choiceD: 'reflect'
+    }).then(question =>
+      quiz.addQuestion(question)
+    );
+
+    models.Question.create({
+      q: 'For the word: definitely, what is the best synonym?',
+      a: 'c',
+      choiceA: 'quickly',
+      choiceB: 'easily',
+      choiceC: 'certainly',
+      choiceD: 'only'
+    }).then(question =>
+      quiz.addQuestion(question)
+    );
+  })
+)
 
 // Re-enable foreign key checks 
 .then(() => models.sequelize.query('SET FOREIGN_KEY_CHECKS = 1'));
