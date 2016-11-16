@@ -10,15 +10,13 @@ const express        = require('express'),
       AmazonStrategy = require('passport-amazon').Strategy,
 
       // Local dependencies
-      routes     = require('./controllers/controller.js'),
-      models     = require('./models'),
+      routes = require('./controllers/controller.js'),
+      models = require('./models'),
 
       // Const vars
-      app                  = express(),
-      hbs                  = exphbs.create({ defaultLayout: 'main', extname: '.hbs' }),
-      PORT                 = process.env.PORT || 3000,
-      AMAZON_CLIENT_ID     = process.env.AMAZON_CLIENT_ID,
-      AMAZON_CLIENT_SECRET = process.env.AMAZON_CLIENT_SECRET;
+      app  = express(),
+      hbs  = exphbs.create({ defaultLayout: 'main', extname: '.hbs' }),
+      PORT = process.env.PORT || 3000;
 
 // Handlebars init
 app.engine('.hbs', hbs.engine);
@@ -35,8 +33,9 @@ app.use(bodyParser.text());
 if (process.env.PORT) {
   app.use(session(
     {
-      secret: 'keyboard cat',
-      cookie: {maxAge: 60000},
+      secret: process.env.SESSION_SECRET,
+      resave: true,
+      saveUninitialized: true,
       store: new SequelizeStore({
         db: models.sequelize
       })}
@@ -46,41 +45,36 @@ if (process.env.PORT) {
   app.use(passport.session());
 
   passport.use(new AmazonStrategy({
-      clientID: AMAZON_CLIENT_ID,
-      clientSecret: AMAZON_CLIENT_SECRET,
+      clientID: process.env.AMAZON_CLIENT_ID,
+      clientSecret:  process.env.AMAZON_CLIENT_SECRET,
       callbackURL: "https://alexaquiz.herokuapp.com/auth/amazon/callback"
     },
     function(accessToken, refreshToken, profile, done) {
-      // asynchronous verification, for effect...
-      process.nextTick(function () {
-        
-        // To keep the example simple, the user's Amazon profile is returned to
-        // represent the logged-in user.  In a typical application, you would want
-        // to associate the Amazon account with a user record in your database,
-        // and return that user instead.
-        return done(null, profile);
+      models.User.findOrCreate({AmazonId: profile.id}).spread((user, wasCreated) => {
+        if (err) { return done(err); }
+        if (!user) { return done(null, false); }
+        return done(null, user);
       });
+      // process.nextTick(function () {
+      //   return done(null, profile);
+      // });
     }
   ));
 
   passport.serializeUser(function(user, done) {
-    console.log(user);
-    done(null, user);
+    console.log('User:', user);
+    done(null, user.AmazonId);
   });
 
-  passport.deserializeUser(function(obj, done) {
-    console.log(obj);
-    done(null, obj);
+  passport.deserializeUser(function(AmazonId, done) {
+    console.log('AmazonId:', AmazonId);
+    models.User.findOne({ AmazonId: AmazonId }).then(user =>
+      done(null, user)
+    );
   });
   
-  app.get('/auth/amazon',
-    passport.authenticate('amazon', { scope: ['profile'] }),
-    function(req, res){
-      // The request will be redirected to Amazon for authentication, so this
-      // function will not be called.
-    });
-  app.get('/auth/amazon/callback', 
-    passport.authenticate('amazon', { successRedirect: '/', failureRedirect: '/login' }));
+  app.get('/auth/amazon',          passport.authenticate('amazon', {scope: ['profile']}));
+  app.get('/auth/amazon/callback', passport.authenticate('amazon', {successRedirect: '/', failureRedirect: '/login'}, (req, res) => res.redirect('/')));
 }
 
 // Sequelize init

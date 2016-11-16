@@ -62,16 +62,8 @@ router.get('/api/quiz/:quiz', (req, res) => {
   const input          = +req.params.quiz ? +req.params.quiz : req.params.quiz,    // Coerce to number if input string would not become NaN
         whereCondition = typeof input === 'number' ? {id: input} : {name: input};  // Create object based on input type
 
-  models.Quiz.findOne(
-    {
-      where: whereCondition
-    }
-  ).then(quiz => 
-    models.User.findOne(
-      {
-        where: {id: quiz.OwnerId}
-      }
-    ).then(user => {
+  models.Quiz.findOne(whereCondition).then(quiz => 
+    models.User.findOne({ id: quiz.OwnerId }).then(user => {
       quiz.dataValues.username = user.username;
       
       quiz.getQuestions().then(questions => {
@@ -81,16 +73,13 @@ router.get('/api/quiz/:quiz', (req, res) => {
     })
   )
 });
+
 // GET user data (accepts user id or username)
 router.get('/api/user/:user', (req, res) => {
   const input          = +req.params.user ? +req.params.user : req.params.user,        // Coerce to number if input string would not become NaN
         whereCondition = typeof input === 'number' ? {id: input} : {username: input};  // Create object based on input type
 
-  models.User.findOne(
-    {
-      where: whereCondition
-    }
-  ).then(user => 
+  models.User.findOne(whereCondition).then(user => 
     user.getQuizzes(
       {
         order: 'UserQuiz.updatedAt DESC'  // Get in order of last quiz taken
