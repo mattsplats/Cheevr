@@ -344,51 +344,71 @@ router.get('/alexa/:quizName', (req, res) => {
 
         // If we are selecting a subset of questions for users
         } else {
+          const options = {
+            uri: 'https://api.amazon.com/user/profile?access_token=' + req.body.accessToken,
+            json: true
+          };
 
-          // Get ids of all questions in quiz
-          let ids = [];
-          for (let i = 0; i < questions.length; i++) {
-            ids.push(questions[i].id);
-          }
+          // Query Amazon API for user profile
+          rp(options).then(profile => {
 
-          // Get questions user has already taken
-          models.User.findOne({ where: { displayName: 'Dummy User' }}).then(user => {
-            models.UserQuestion.findAll({
-              where: {
-                QuestionId: { $in: ids },
-                UserId: user.id
-              },
-              order: ['accuracy']
-            }).then(uq => {
-              let qArr = [],  // Questions to send
-                  i    = 0;
+            // Get the user database model
+            models.User.findOne({ where: { AmazonId: profile.user_id }}).then(user => {
+              
+              // If there is a user in the database
+              if (user) {
+                models.UserQuestion.findAll({
+                  where: {
+                    QuestionId: { $in: ids },
+                    UserId: user.id
+                  },
+                  order: ['accuracy']
+                }).then(uq => {
+                  let qArr = [],  // Questions to send
+                      i    = 0,
+                      ids  = [];  // IDs of all questions in quiz
 
-              // Iterate through questions and push questions user has not taken to qArr
-              while (i < questions.length && qArr.length < numToAsk) {
+                  // Fill ids
+                  for (let i = 0; i < questions.length; i++) {
+                    ids.push(questions[i].id);
+                  };
 
-                // If questions have not been taken (are not in UserQuestion) AND have not been selected already (are not in qArr)
-                if (uq.indexOfProp(ids[i], 'id') === -1 && qArr.indexOfProp(ids[i], 'id') === -1) qArr.push(questions[i]);
+                  // Iterate through questions and push questions user has not taken to qArr
+                  while (i < questions.length && qArr.length < numToAsk) {
 
-                i++;
+                    // If questions have not been taken (are not in UserQuestion) AND have not been selected already (are not in qArr)
+                    if (uq.indexOfProp(ids[i], 'id') === -1 && qArr.indexOfProp(ids[i], 'id') === -1) qArr.push(questions[i]);
+
+                    i++;
+                  }
+
+                  // If we need more questions to meet numToAsk
+                  // Iterate through uq and push questions user did poorly on to qArr
+                  while (qArr.length < numToAsk) {
+
+                    // Quadratic random number distribution (skews towards UserQuestions with low accuracy)
+                    const rand  = Math.random(),
+                          index = Math.floor(rand * rand) * uq.length;
+
+                    // If qArr does not have a question with chosen index's id, push question from questions where id === uq[index].id
+                    if (qArr.indexOfProp(uq[index].id, 'id') === -1) qArr.push(questions[questions.indexOfProp(uq[index].id, 'id')]);
+                  }
+
+                  res.json({
+                    questions: shuffle(qArr),
+                    name: quiz[0].dataValues.name,
+                    type: quiz[0].dataValues.type
+                  });
+                });
+              
+              // If there is no user in the database yet
+              } else {
+                res.json({
+                  questions: questions.slice(0, numToAsk - 1),
+                  name: quiz[0].dataValues.name,
+                  type: quiz[0].dataValues.type
+                });
               }
-
-              // If we need more questions to meet numToAsk
-              // Iterate through uq and push questions user did poorly on to qArr
-              while (qArr.length < numToAsk) {
-
-                // Quadratic random number distribution (skews towards UserQuestions with low accuracy)
-                const rand  = Math.random(),
-                      index = Math.floor(rand * rand) * uq.length;
-
-                // If qArr does not have a question with chosen index's id, push question from questions where id === uq[index].id
-                if (qArr.indexOfProp(uq[index].id, 'id') === -1) qArr.push(questions[questions.indexOfProp(uq[index].id, 'id')]);
-              }
-
-              res.json({
-                questions: shuffle(qArr),
-                name: quiz[0].dataValues.name,
-                type: quiz[0].dataValues.type
-              });
             })
           })
         }
