@@ -74,10 +74,10 @@ setInterval(keepAlive, 50000);
 
 // Web API
 // View GET routes
-router.get('/', (req, res) =>               res.render('index'                  ));
-router.get('/selectquiz', (req, res) =>     res.render('layouts/selectquiz'     ));
-router.get('/createquiz', (req, res) =>     res.render('layouts/createquiz'     ));
-router.get('/gettingstarted', (req, res) => res.render('layouts/gettingstarted' ));
+router.get('/', (req, res) =>               res.render('index',                  { isLoggedIn: req.session.passport }));
+router.get('/selectquiz', (req, res) =>     res.render('layouts/selectquiz',     { isLoggedIn: req.session.passport }));
+router.get('/createquiz', (req, res) =>     res.render('layouts/createquiz',     { isLoggedIn: req.session.passport }));
+router.get('/gettingstarted', (req, res) => res.render('layouts/gettingstarted', { isLoggedIn: req.session.passport }));
 
 // GET quiz data (accepts quiz id or quiz name)
 router.get('/api/quiz/:quizName', (req, res) => {
