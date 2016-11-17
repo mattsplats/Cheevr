@@ -40,7 +40,6 @@ function authUser (req, res) {
 
 // User logged in check for navbar
 function isLoggedIn (req, res) {
-  console.log(req.session);
   if (process.env.AMAZON_CLIENT_ID) if (req.session.passport) return true;
   return false;
 }
@@ -96,7 +95,7 @@ router.get('/user', (req, res) => {
           include: models.Question
         }).then(quizzes => {   // Get in order of last quiz taken 
           user.dataValues.quizzes = quizzes;
-          res.render('layouts/user', { isLoggedIn: isLoggedIn(req, res), user: user, quizzes: user.dataValues.quizzes });
+          res.render('layouts/user', { isLoggedIn: true, user: user, quizzes: user.dataValues.quizzes });
         })
 
       } else {

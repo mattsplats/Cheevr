@@ -7,54 +7,54 @@
 
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Raleway:600,800" rel="stylesheet">
-    <link type="text/css" rel="stylesheet" href="/assets/materialize/css/materialize.min.css" media="screen,projection"/>
-    <link type="text/css" rel="stylesheet" href="/assets/materialize/css/style.css" media="screen,projection"/>
+    <link type="text/css" rel="stylesheet" href="/assets/css/materialize.min.css" media="screen,projection"/>
+    <link type="text/css" rel="stylesheet" href="/assets/css/style.css" media="screen,projection"/>
   </head>
   <body>
     <script src="assets/js/jquery-3.1.1.min.js" type="text/javascript"></script>
-    <script src="assets/materialize/js/materialize.min.js"></script>
-    <script src="assets/materialize/js/init.js"></script>
+    <script src="assets/js/materialize.min.js"></script>
+    <script src="assets/js/init.js"></script>
+    <script src="assets/js/app.js"></script>
 
-    <ul id='dropdown1' class='dropdown-content'>
-      <li><a href="/createquiz">Create</a></li>
-      <li><a href="/selectquiz">Select</a></li>
+    <!-- Mobile dropdown -->
+    <ul id="dropdown_mobile" class="dropdown-content">
+      <li><a href="#!">My Quizzes</a></li>
+      <li><a href="#!">My Results</a></li>
     </ul>
+
+    <!-- Nav -->
     <nav class="white" role="navigation">
       <div class="nav-wrapper container">
-        <a id="logo-container" href="/" class="brand-logo">Quizzler</a>
+        <a href="/" class="brand-logo">Quizzler</a>
+        <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
         <ul class="right hide-on-med-and-down">
-          <li>
-            <div class="input-field">
-              <input id="search" type="search" required>
-              <label for="search"><i class="material-icons">search</i></label>
-              <i class="material-icons">close</i>
-            </div>
-          </li>
           <li><a href="/gettingStarted">Getting Started</a></li>
           {{#if isLoggedIn}}
-            <li><a class='dropdown-button' data-activates='dropdown1'>Quizzes</a></li>
+            <li><a href="/auth/amazon">My Quizzes</a></li>
+            <li><a href="#!">My Results</a></li>
           {{else}}
             <li><a href="/auth/amazon">Login</a></li>
           {{/if}}
-          
         </ul>
-        <ul id="nav-mobile" class="side-nav">
+        <ul class="side-nav" id="nav-mobile">
           <li><a href="/gettingStarted">Getting Started</a></li>
-          <li><a href="/auth/amazon">Login</a></li>
-          <li><a class='dropdown-button' data-activates='dropdown1'>Quizzes</a></li>
+          {{#if isLoggedIn}}
+            <li><a class="dropdown-button" href="#!" data-activates="dropdown_mobile">My Account<i class="material-icons right">arrow_drop_down</i></a></li>
+          {{else}}
+            <li><a href="/auth/amazon">Login</a></li>
+          {{/if}}
         </ul>
-        <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
       </div>
     </nav>
+
     {{{ body }}}
+
     <footer class="page-footer light-green darken-2">
       <div class="container">
         <div class="row">
           <div class="col l6 s12">
             <h5 class="white-text">Company Bio</h5>
             <p class="grey-text text-lighten-4">We are a team of college students working on this project like it's our full time job. Any amount would help support and continue development on this project and is greatly appreciated.</p>
-
-
           </div>
           <div class="col l3 s12">
             <h5 class="white-text">Settings</h5>
