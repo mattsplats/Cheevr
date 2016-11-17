@@ -12,9 +12,10 @@ const express = require('express'),
       sse     = new expsse(['keepAlive']),
       router  = express.Router();
 
-Array.prototype.indexOfProp = function (prop, value) {
+Array.prototype.indexOfProp = function (value, prop1, prop2) {
   for (var i = 0; i < this.length; i++) {
-    if (this[i][prop] === value) return i;
+    if (prop2) if (this[i] && this[i][prop1][prop2] === value) return i;
+    else if (this[i] && this[i][prop1] === value) return i;
   }
 
   return -1;
@@ -91,10 +92,38 @@ router.get('/api/quiz/:quizName', (req, res) => {
   );
 });
 
-// GET quiz search
-router.get('/api/search/:quizName', (req, res) => 
-  models.Quiz.findAll({ where: { name: { $like: `%${req.params.quizName}%` }}}).then(quizzes =>
+// GET all quizzes
+router.get('/api/quizzes', (req, res) => 
+  models.Quiz.findAll().then(quizzes => 
     res.json(quizzes)
+  )
+);
+
+// GET quiz search (returns exact name first, then near matches, then quizzes with search term in desc)
+router.get('/api/search/:quizName', (req, res) => 
+  models.Quiz.findOne({
+    where: { name: req.params.quizName },
+    include: [models.Question]
+  }).then(quizByName =>
+    models.Quiz.findAll({
+      where: { name: { $like: `%${req.params.quizName}%` }},
+      include: [models.Question]
+    }).then(quizzesByName => 
+      models.Quiz.findAll({
+        where: { desc: { $like: `%${req.params.quizName}%` }},
+        include: [models.Question]
+      }).then(quizzesByDesc => {
+        let quizzes = quizByName ? [quizByName] : [];  // Final list
+
+        for (let i = 0; i < quizzesByName.length; i++) {
+          if (quizzes.indexOfProp(quizzesByName[i].dataValues.id, 'dataValues', 'id') === -1) quizzes.push(quizzesByName[i]);
+        }
+        for (let i = 0; i < quizzesByDesc.length; i++) {
+          if (quizzes.indexOfProp(quizzesByDesc[i].dataValues.id, 'dataValues', 'id') === -1) quizzes.push(quizzesByDesc[i]);
+        }
+        res.json(quizzes);
+      })
+    )
   )
 );
 
@@ -299,7 +328,7 @@ router.get('/alexa/:quizName', (req, res) => {
               while (i < questions.length && qArr.length < numToAsk) {
 
                 // If questions have not been taken (are not in UserQuestion) AND have not been selected already (are not in qArr)
-                if (uq.indexOfProp('id', ids[i]) === -1 && qArr.indexOfProp('id', ids[i]) === -1) qArr.push(questions[i]);
+                if (uq.indexOfProp(ids[i], 'id') === -1 && qArr.indexOfProp(ids[i], 'id') === -1) qArr.push(questions[i]);
 
                 i++;
               }
@@ -313,7 +342,7 @@ router.get('/alexa/:quizName', (req, res) => {
                       index = Math.floor(rand * rand) * uq.length;
 
                 // If qArr does not have a question with chosen index's id, push question from questions where id === uq[index].id
-                if (qArr.indexOfProp('id', uq[index].id) === -1) qArr.push(questions[questions.indexOfProp('id', uq[index].id)]);
+                if (qArr.indexOfProp(uq[index].id, 'id') === -1) qArr.push(questions[questions.indexOfProp(uq[index].id, 'id')]);
               }
 
               res.json({

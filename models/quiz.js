@@ -2,6 +2,7 @@
 module.exports = function(sequelize, DataTypes) {
   var Quiz = sequelize.define('Quiz', {
     name: DataTypes.STRING,
+    desc: DataTypes.STRING,
     type: DataTypes.STRING,
     OwnerId: DataTypes.INTEGER,
     OwnerDisplayName: DataTypes.STRING,
@@ -19,6 +20,10 @@ module.exports = function(sequelize, DataTypes) {
     },
     accuracy: {
       type: DataTypes.FLOAT,
+      defaultValue: 0
+    },
+    totalAttempts: {
+      type: DataTypes.INTEGER,
       defaultValue: 0
     }
   }, {
