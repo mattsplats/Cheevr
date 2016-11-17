@@ -38,6 +38,12 @@ function authUser (req, res) {
   }
 }
 
+// User logged in check for navbar
+function isLoggedIn (req, res) {
+  if (process.env.AMAZON_CLIENT_ID) if (req.session.passport) return true;
+  return false;
+}
+
 // Input verification for POST/PUT/DELETE routes
 function verifyQuizName (req, res, success) {
   if (/[^a-z0-9.,:!?' ]/gi.test(req.body.name)) {
@@ -74,10 +80,10 @@ setInterval(keepAlive, 50000);
 
 // Web API
 // View GET routes
-router.get('/', (req, res) =>               res.render('index',                  { isLoggedIn: req.session }));
-router.get('/selectquiz', (req, res) =>     res.render('layouts/selectquiz',     { isLoggedIn: req.session }));
-router.get('/createquiz', (req, res) =>     res.render('layouts/createquiz',     { isLoggedIn: req.session }));
-router.get('/gettingstarted', (req, res) => res.render('layouts/gettingstarted', { isLoggedIn: req.session }));
+router.get('/', (req, res) =>               res.render('index',                  { isLoggedIn: isLoggedIn(req, res) }));
+router.get('/selectquiz', (req, res) =>     res.render('layouts/selectquiz',     { isLoggedIn: isLoggedIn(req, res) }));
+router.get('/createquiz', (req, res) =>     res.render('layouts/createquiz',     { isLoggedIn: isLoggedIn(req, res) }));
+router.get('/gettingstarted', (req, res) => res.render('layouts/gettingstarted', { isLoggedIn: isLoggedIn(req, res) }));
 router.get('/user', (req, res) => {
   const whereCondition = authUser(req, res);
 
