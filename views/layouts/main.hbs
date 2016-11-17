@@ -19,9 +19,9 @@
     <!-- Desktop dropdown -->
     {{#if isLoggedIn}}
     <ul id="dropdown_desktop" class="dropdown-content">
-      <li><a href="/user/results">My Results</a></li>
-      <li><a href="/user/quizzes">My Quizzes</a></li>
-      <li><a href="/user/create">Create Quiz</a></li>
+      <li><a href="/user_results">My Results</a></li>
+      <li><a href="/user_quizzes">My Quizzes</a></li>
+      <li><a href="/user_create">Create Quiz</a></li>
     </ul>
     {{/if}}
 
@@ -34,7 +34,7 @@
           <li><a href="/search"><i class="material-icons">search</i></a></li>
           <li><a href="/gettingStarted">Getting Started</a></li>
           {{#if isLoggedIn}}
-            <li><a class="dropdown-button" href="#!" data-activates="dropdown_desktop">User's Account<i class="material-icons right">arrow_drop_down</i></a></li>
+            <li><a class="dropdown-button" href="#!" data-activates="dropdown_desktop">{{username}}'s Account<i class="material-icons right">arrow_drop_down</i></a></li>
           {{else}}
             <li><a href="/auth/amazon">Login</a></li>
           {{/if}}
