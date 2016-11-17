@@ -73,6 +73,7 @@ var createQuizzes={
         questions: createQuizzes.questions,
       };
       console.log(newQuiz);
+      var currentURL = window.location.origin;
       $.post(currentURL + '/api', newQuiz).done(function (data) {
           console.log(data);
           alert('New Quiz Created!');
@@ -127,6 +128,7 @@ var createQuizzes={
         questions: createQuizzes.questions,
       };
       console.log(newQuiz);
+      var currentURL = window.location.origin;
       $.post(currentURL + '/api', newQuiz).done(function (data) {
           console.log(data);
           alert('New Quiz Created!');
