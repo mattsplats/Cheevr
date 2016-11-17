@@ -34,7 +34,7 @@ function authUser (req, res) {
     }
 
   } else {
-    return { where: { displayName: 'Dummy User' }};
+    return { where: { id: 1 }};
   }
 }
 
@@ -74,10 +74,27 @@ setInterval(keepAlive, 50000);
 
 // Web API
 // View GET routes
-router.get('/', (req, res) =>               res.render('index',                  { isLoggedIn: req.session.passport }));
-router.get('/selectquiz', (req, res) =>     res.render('layouts/selectquiz',     { isLoggedIn: req.session.passport }));
-router.get('/createquiz', (req, res) =>     res.render('layouts/createquiz',     { isLoggedIn: req.session.passport }));
-router.get('/gettingstarted', (req, res) => res.render('layouts/gettingstarted', { isLoggedIn: req.session.passport }));
+router.get('/', (req, res) =>               res.render('index',                  { isLoggedIn: req.session }));
+router.get('/selectquiz', (req, res) =>     res.render('layouts/selectquiz',     { isLoggedIn: req.session }));
+router.get('/createquiz', (req, res) =>     res.render('layouts/createquiz',     { isLoggedIn: req.session }));
+router.get('/gettingstarted', (req, res) => res.render('layouts/gettingstarted', { isLoggedIn: req.session }));
+router.get('/user', (req, res) => {
+  const whereCondition = authUser(req, res);
+
+  if (whereCondition) {
+    models.User.findOne(whereCondition).then(user => {
+      if (user) {
+        user.getQuizzes({ order: 'UserQuiz.updatedAt DESC' }).then(quizzes => {   // Get in order of last quiz taken 
+          user.dataValues.quizzes = quizzes;
+          res.render('layouts/user', { user: user, quizzes: user.dataValues.quizzes });
+        })
+
+      } else {
+        res.send('No user by that ID');
+      }
+    })
+  }
+});
 
 // GET quiz data (accepts quiz id or quiz name)
 router.get('/api/quiz/:quizName', (req, res) => {
@@ -134,11 +151,7 @@ router.get('/api/user', (req, res) => {
   if (whereCondition) {
     models.User.findOne(whereCondition).then(user => {
       if (user) {
-        user.getQuizzes(
-          {
-            order: 'UserQuiz.updatedAt DESC'  // Get in order of last quiz taken
-          }
-        ).then(quizzes => {
+        user.getQuizzes({ order: 'UserQuiz.updatedAt DESC' }).then(quizzes => {   // Get in order of last quiz taken 
           user.dataValues.quizzes = quizzes;
           res.json(user);
         })

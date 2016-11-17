@@ -84,7 +84,7 @@ if (process.env.AMAZON_CLIENT_ID) {
   });
   
   app.get('/auth/amazon',          passport.authenticate('amazon', {scope: ['profile']}));
-  app.get('/auth/amazon/callback', passport.authenticate('amazon', {successRedirect: '/', failureRedirect: '/login'}));
+  app.get('/auth/amazon/callback', passport.authenticate('amazon', {successRedirect: '/user', failureRedirect: '/'}));
 }
 
 // Sequelize init
