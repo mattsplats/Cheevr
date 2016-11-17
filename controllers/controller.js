@@ -91,9 +91,12 @@ router.get('/user', (req, res) => {
   if (whereCondition) {
     models.User.findOne(whereCondition).then(user => {
       if (user) {
-        user.getQuizzes({ order: 'UserQuiz.updatedAt DESC' }).then(quizzes => {   // Get in order of last quiz taken 
+        models.Quiz.findAll({
+          where: { OwnerId: user.id },
+          include: models.Question
+        }).then(quizzes => {   // Get in order of last quiz taken 
           user.dataValues.quizzes = quizzes;
-          res.render('layouts/user', { user: user, quizzes: user.dataValues.quizzes });
+          res.render('layouts/user', { isLoggedIn: isLoggedIn(req, res), user: user, quizzes: user.dataValues.quizzes });
         })
 
       } else {
@@ -151,8 +154,8 @@ router.get('/api/search/:quizName', (req, res) =>
   )
 );
 
-// GET user data (do we need this now?)
-router.get('/api/user', (req, res) => {
+// GET user data by UserQuiz order
+router.get('/api/userStats', (req, res) => {
   const whereCondition = authUser(req, res);
 
   if (whereCondition) {

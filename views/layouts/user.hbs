@@ -10,6 +10,16 @@
       <div><i>Say: "Alexa, ask educate me to quiz me on {{name}}"</i></div>
       <p>{{desc}}</p>
       <br/>
+      <ul>
+      {{#each Questions}}
+        <li>{{q}} ({{a}})</li>
+        {{#if choiceA}}<li>A: {{choiceA}}</li>{{/if}}
+        {{#if choiceB}}<li>B: {{choiceB}}</li>{{/if}}
+        {{#if choiceC}}<li>C: {{choiceC}}</li>{{/if}}
+        {{#if choiceD}}<li>D: {{choiceD}}</li>{{/if}}
+        <br/>
+      {{/each}}
+      </ul>
     </li>
   {{/each}}
   </ul>
