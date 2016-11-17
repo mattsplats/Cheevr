@@ -343,14 +343,7 @@ router.post('/alexa', (req, res) => {
     };
 
     rp(options).then(profile => {
-      console.log(profile);
-
-      models.User.findOrCreate({
-        where: {
-          AmazonId: profile.user_id,
-          displayName: profile.name
-        }
-      }).spread((user, wasCreated) => {
+      models.User.findOrCreate({ where: { AmazonId: profile.user_id }}).spread((user, wasCreated) => {
 
         // Update Quiz table
         models.Quiz.findOne({ where: { name: req.body.name }}).then(quiz => {
