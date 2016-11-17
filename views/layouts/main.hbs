@@ -7,31 +7,34 @@
 
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Raleway:600,800" rel="stylesheet">
-    <link type="text/css" rel="stylesheet" href="/assets/css/materialize.min.css" media="screen,projection"/>
+    <link type="text/css" rel="stylesheet" href="/assets/css/materialize.css" media="screen,projection"/>
     <link type="text/css" rel="stylesheet" href="/assets/css/style.css" media="screen,projection"/>
   </head>
   <body>
     <script src="assets/js/jquery-3.1.1.min.js" type="text/javascript"></script>
-    <script src="assets/js/materialize.min.js"></script>
+    <script src="assets/js/materialize.js"></script>
     <script src="assets/js/init.js"></script>
     <script src="assets/js/app.js"></script>
 
-    <!-- Mobile dropdown -->
-    <ul id="dropdown_mobile" class="dropdown-content">
-      <li><a href="#!">My Quizzes</a></li>
-      <li><a href="#!">My Results</a></li>
+    <!-- Desktop dropdown -->
+    {{#if isLoggedIn}}
+    <ul id="dropdown_desktop" class="dropdown-content">
+      <li><a href="/user/results">My Results</a></li>
+      <li><a href="/user/quizzes">My Quizzes</a></li>
+      <li><a href="/user/create">Create Quiz</a></li>
     </ul>
+    {{/if}}
 
     <!-- Nav -->
     <nav class="white" role="navigation">
       <div class="nav-wrapper container">
         <a href="/" class="brand-logo">Quizzler</a>
         <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
-        <ul class="right hide-on-med-and-down">
+        <ul class="right hide-on-small-only">
+          <li><a href="/search"><i class="material-icons">search</i></a></li>
           <li><a href="/gettingStarted">Getting Started</a></li>
           {{#if isLoggedIn}}
-            <li><a href="/auth/amazon">My Quizzes</a></li>
-            <li><a href="#!">My Results</a></li>
+            <li><a class="dropdown-button" href="#!" data-activates="dropdown_desktop">User's Account<i class="material-icons right">arrow_drop_down</i></a></li>
           {{else}}
             <li><a href="/auth/amazon">Login</a></li>
           {{/if}}
@@ -39,7 +42,10 @@
         <ul class="side-nav" id="nav-mobile">
           <li><a href="/gettingStarted">Getting Started</a></li>
           {{#if isLoggedIn}}
-            <li><a class="dropdown-button" href="#!" data-activates="dropdown_mobile">My Account<i class="material-icons right">arrow_drop_down</i></a></li>
+            <li><a href="/search">Search Quizzes</a></li>
+            <li><a href="/user_results">My Results</a></li>
+            <li><a href="/user_quizzes">My Quizzes</a></li>
+            <li><a href="/user_create">Create Quiz</a></li>
           {{else}}
             <li><a href="/auth/amazon">Login</a></li>
           {{/if}}

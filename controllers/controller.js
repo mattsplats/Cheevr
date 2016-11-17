@@ -40,8 +40,8 @@ function authUser (req, res) {
 
 // User logged in check for navbar
 function isLoggedIn (req, res) {
-  if (process.env.AMAZON_CLIENT_ID) if (req.session.passport) return true;
-  return false;
+  if (process.env.AMAZON_CLIENT_ID) return !!req.session.passport;
+  return true;
 }
 
 // Input verification for POST/PUT/DELETE routes
@@ -79,12 +79,13 @@ setInterval(keepAlive, 50000);
 
 
 // Web API
-// View GET routes
-router.get('/', (req, res) =>               res.render('index',                  { isLoggedIn: isLoggedIn(req, res) }));
-router.get('/selectquiz', (req, res) =>     res.render('layouts/selectquiz',     { isLoggedIn: isLoggedIn(req, res) }));
-router.get('/createquiz', (req, res) =>     res.render('layouts/createquiz',     { isLoggedIn: isLoggedIn(req, res) }));
+// Non-auth web routes
+router.get('/', (req, res) => res.render('index', { isLoggedIn: isLoggedIn(req, res) }));
 router.get('/gettingstarted', (req, res) => res.render('layouts/gettingstarted', { isLoggedIn: isLoggedIn(req, res) }));
-router.get('/user', (req, res) => {
+router.get('/search', (req, res) => res.render('layouts/selectquiz', { isLoggedIn: isLoggedIn(req, res) }));
+
+// Auth required web routes
+router.get('/user_results', (req, res) => {
   const whereCondition = authUser(req, res);
 
   if (whereCondition) {
@@ -95,7 +96,7 @@ router.get('/user', (req, res) => {
           include: models.Question
         }).then(quizzes => {   // Get in order of last quiz taken 
           user.dataValues.quizzes = quizzes;
-          res.render('layouts/user', { isLoggedIn: true, user: user, quizzes: user.dataValues.quizzes });
+          res.render('layouts/user_results', { isLoggedIn: isLoggedIn(req, res), user: user, quizzes: user.dataValues.quizzes });
         })
 
       } else {
@@ -104,6 +105,8 @@ router.get('/user', (req, res) => {
     })
   }
 });
+router.get('/user_quizzes', (req, res) => res.render('layouts/user_quizzes', { isLoggedIn: isLoggedIn(req, res) }));
+router.get('/user_create', (req, res) => res.render('layouts/user_create', { isLoggedIn: isLoggedIn(req, res) }));
 
 // GET quiz data (accepts quiz id or quiz name)
 router.get('/api/quiz/:quizName', (req, res) => {
