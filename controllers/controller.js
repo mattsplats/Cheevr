@@ -74,10 +74,10 @@ setInterval(keepAlive, 50000);
 
 // Web API
 // View GET routes
-router.get('/', (req, res) => res.render('index'));
-router.get('/selectquiz', (req, res) => res.render('layouts/selectquiz'));
-router.get('/createquiz', (req, res) => res.render('layouts/createquiz'));
-router.get('/gettingstarted', (req, res) => res.render('layouts/gettingstarted'));
+router.get('/', (req, res) =>               res.render('index'                  ));
+router.get('/selectquiz', (req, res) =>     res.render('layouts/selectquiz'     ));
+router.get('/createquiz', (req, res) =>     res.render('layouts/createquiz'     ));
+router.get('/gettingstarted', (req, res) => res.render('layouts/gettingstarted' ));
 
 // GET quiz data (accepts quiz id or quiz name)
 router.get('/api/quiz/:quizName', (req, res) => {
@@ -385,7 +385,8 @@ router.post('/alexa', (req, res) => {
             {
               timesAttempted: quiz.timesAttempted,
               timesSucceeded: quiz.timesSucceeded,
-              accuracy: quiz.accuracy
+              accuracy: quiz.accuracy,
+              totalAttempts: quiz.totalAttempts + 1
             },
             { where: { id: quiz.id }
           });

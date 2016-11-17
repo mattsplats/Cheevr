@@ -19,16 +19,16 @@
       <div class="nav-wrapper container">
         <a id="logo-container" href="/" class="brand-logo">Quizzler</a>
         <ul class="right hide-on-med-and-down">
-          <!--<li>
-            <form>
+          <li>
             <div class="input-field">
               <input id="search" type="search" required>
               <label for="search"><i class="material-icons">search</i></label>
               <i class="material-icons">close</i>
             </div>
-          </form>
-        </li>-->
-          <li><a class='dropdown-button' data-activates='dropdown1'>Quizzes</a></li>
+          </li>
+          {{#if isLoggedIn}}
+            <li><a class='dropdown-button' data-activates='dropdown1'>Quizzes</a></li>
+          {{/if}}
           <li><a href="/auth/amazon">Login</a></li>
           <li><a href="/gettingStarted">Getting Started</a></li>
         </ul>
