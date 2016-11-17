@@ -150,7 +150,7 @@ router.get('/api/search/:quizName', (req, res) =>
   )
 );
 
-// GET user data
+// GET user data (do we need this now?)
 router.get('/api/user', (req, res) => {
   const whereCondition = authUser(req, res);
 
