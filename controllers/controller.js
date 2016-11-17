@@ -359,9 +359,14 @@ router.post('/alexa', (req, res) => {
           quiz.timesSucceeded += req.body.results.reduce((a,b) => b ? a + 1 : a, 0);
           quiz.accuracy = 100 * quiz.timesSucceeded / quiz.timesAttempted;
 
-          models.sequelize.query(`UPDATE Quizzes SET timesAttempted = ?, timesSucceeded = ?, accuracy = ? WHERE name = ?;`,
-            { replacements: [quiz.timesAttempted, quiz.timesSucceeded, quiz.accuracy, req.body.name] }
-          );
+          models.Quiz.update(
+            {
+              timesAttempted: quiz.timesAttempted,
+              timesSucceeded: quiz.timesSucceeded,
+              accuracy: quiz.accuracy
+            },
+            { where: { id: quiz.id }
+          });
 
           // Update UserQuiz table
           quiz.addUser(user).then(() => {
@@ -376,7 +381,10 @@ router.post('/alexa', (req, res) => {
                   timesSucceeded: uq.timesSucceeded,
                   accuracy: uq.accuracy
                 },
-                { where: { QuizId: quiz.id }
+                { where: {
+                  UserId: user.id,
+                  QuizId: quiz.id
+                }
               });
             })
           })
