@@ -37,7 +37,7 @@ if (process.env.AMAZON_CLIENT_ID) {
   app.use(session(
     {
       secret: process.env.SESSION_SECRET,
-      cookie: { maxAge: 60000 },
+      cookie: { maxAge: 3600000 },
       resave: false,
       saveUninitialized: false,
       store: new SequelizeStore({

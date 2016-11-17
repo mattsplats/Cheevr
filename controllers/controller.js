@@ -40,6 +40,7 @@ function authUser (req, res) {
 
 // User logged in check for navbar
 function isLoggedIn (req, res) {
+  console.log(req.session);
   if (process.env.AMAZON_CLIENT_ID) if (req.session.passport) return true;
   return false;
 }
