@@ -1,0 +1,15 @@
+<div class="container">
+  <div class="section no-pad-bot">
+    <h1 class="header center light-green-text">User Page</h1>
+  </div>
+  <ul id="quizzes">
+  {{#each quizzes}}
+    <li>
+      <h3>{{name}}</h3>
+      {{type}}
+      <div><i>Say: "Alexa, ask educate me to quiz me on {{name}}"</i></div>
+      <p>{{desc}}</p>
+    </li>
+  {{/each}}
+  </ul>
+</div>
