@@ -1,14 +1,14 @@
 {
   "development": {
-    "username": "gael",
-    "password": "07G15a92",
+    "username": "carlos",
+    "password": "carlos1",
     "database": "quiz_db",
     "host": "localhost",
     "dialect": "mysql"
   },
   "test": {
-    "username": "gael",
-    "password": "07G15a92",
+    "username": "carlos",
+    "password": "carlos1",
     "database": "quiz_db",
     "host": "localhost",
     "dialect": "mysql"
@@ -18,3 +18,5 @@
     "dialect": "mysql"
   }
 }
+
+
