@@ -1,56 +1,19 @@
-<div id="index-banner" class="parallax-container">
-  <div class="section no-pad-bot">
-    <div class="container">
-      <br><br>
-      <h1 class="header center light-green-text text-darken-2">Search</h1>
-      <div class="row">
-        <div class="col s3">
-        </div>
-    <div class="col s8">
-        <div class="input-field col s8">
-          <a class="material-icons prefix" id="searchButton">search</a>
-          <input id="search" type="text" class="validate">
-          <label for="search">Search</label>
-      </div>
-    </div>
-  </div>
-  </div>
-  <div class="parallax"><img src="/assets/images/diagmonds_@2X.png" alt="Change background for an original"></div>
+<div>
+  <div class="section light-green">
+    <h3 class="header center white-text">Quiz Search</h3>
   </div>
 </div>
-<div class="container">
-  <div class="section" id="displayQuiz">
-    <div class="row">
-
+<div class="row">
+  <br/>
+  <div class="container">
+    <div class="input-field col s12">
+      <input id="search" type="text" class="validate">
+      <label for="search">Search</label>
     </div>
   </div>
 </div>
-<script>
-var searchQuiz={
-  getQuiz: function(){
-    var searchQ=$("#search").val().trim();
-    var currentURL=window.location.origin;
-    $.get(currentURL+'/api/search/' + searchQ).done(function(data){
-      console.log(data);
-      searchQuiz.displayQ(data);
-    });
-  },
-  displayQ: function(quiz){
-    var quiz=quiz[0];
-    var quizType;
-    if(quiz.type==='trueFalse'){
-      quizType="True or False";
-    } else if (quiz.type==='multipleChoice') {
-      quizType="Multiple Choice";
-    }
-    $("#displayQuiz").html("<div class='row'><div class='col s12 m6'><div class='card blue-grey darken-1'><div class='card-content white-text'><span class='card-title'>"+quiz.name+"</span><p>Type: "+quizType+"</p><p>Say: 'Alexa, ask cheevo to quiz me on "+quiz.name+"'</p></div><div class='card-action' id='displayQues'><a href='#' id='quesDisBut'>Display Questions</a></div></div></div></div>");
-  }
-};
-$("#searchButton").on('click', function(){
-  searchQuiz.getQuiz();
-});
+<div class="row no-margin">
+  <div class="col s10 offset-s1" id="displayQuiz"></div>
+</div>
 
-$("#search").on('keypress', function (e) {
-  if (e.keyCode === 13) $("#searchButton").click();
-})
-</script>
+<script src="assets/js/search.js"></script>

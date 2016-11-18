@@ -94,7 +94,27 @@ router.get('/gettingstarted', (req, res) => renderWithUsername('layouts/gettings
 router.get('/search', (req, res) => renderWithUsername('layouts/search', req, res));
 
 // Auth required web routes
-router.get('/user_results', (req, res) => {
+router.get('/user_results', (req, res) =>  {
+  const whereCondition = authUser(req, res);
+
+  if (whereCondition) {
+    models.User.findOne(whereCondition).then(user => {
+      if (user) {
+        user.getQuizzes({ order: 'UserQuiz.updatedAt DESC' }).then(quizzes =>
+          res.render('layouts/user_results', {
+            isLoggedIn: isLoggedIn(req, res),
+            username: user.displayName.split(" ")[0],
+            quizzes: quizzes
+          })
+        )
+
+      } else {
+        res.send('No user by that ID');
+      }
+    })
+  }
+});
+router.get('/user_quizzes', (req, res) => {
   const whereCondition = authUser(req, res);
 
   if (whereCondition) {
@@ -103,13 +123,13 @@ router.get('/user_results', (req, res) => {
         models.Quiz.findAll({
           where: { OwnerId: user.id },
           include: models.Question
-        }).then(quizzes => {   // Get in order of last quiz taken 
-          user.dataValues.quizzes = quizzes;
-          res.render('layouts/user_results', {
+        }).then(quizzes => {
+          quizzes.map(quiz => quiz.dataValues.Questions.map(question => question.a = question.a.toUpperCase()));
+          res.render('layouts/user_quizzes', {
             isLoggedIn: isLoggedIn(req, res),
             username: user.displayName.split(" ")[0],
             user: user,
-            quizzes: user.dataValues.quizzes
+            quizzes: quizzes
           });
         })
 
@@ -119,7 +139,6 @@ router.get('/user_results', (req, res) => {
     })
   }
 });
-router.get('/user_quizzes', (req, res) => renderWithUsername('layouts/user_quizzes', req, res));
 router.get('/user_create', (req, res) => renderWithUsername('layouts/user_create', req, res));
 
 // GET quiz data (accepts quiz id or quiz name)
@@ -149,7 +168,7 @@ router.get('/api/search/:quizName', (req, res) =>
     include: [models.Question]
   }).then(quizByName =>
     models.Quiz.findAll({
-      where: { name: { $like: `%${req.params.quizName}%` }},
+      where: { name: { $like: `${req.params.quizName}%` }},
       include: [models.Question]
     }).then(quizzesByName => 
       models.Quiz.findAll({
@@ -317,7 +336,7 @@ router.delete('/api', (req, res) => {
 router.get('/alexa/:string', (req, res) => {
   const string      = req.params.string.split('.'),
         quizName    = string[0],
-        accessToken = !string[1] || string[1] == 'false' || typeof string[1] !== 'string' ? false : string[1];
+        accessToken = !string[1] || string[1] == 'false' || typeof +string[1] === 'number' ? false : string[1];
 
   console.log();
   console.log('==========================');
