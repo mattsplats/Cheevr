@@ -316,7 +316,10 @@ router.delete('/api', (req, res) => {
 // Respond to quiz requests
 router.get('/alexa/:string', (req, res) => {
 
-  let [quizName, accessToken] = req.params.string.split('.');
+  const string      = req.params.string.split('.'),
+        quizName    = string[0],
+        accesstoken = string[1] == 'false' || !string[1] ? false : string[1];
+
   if (accessToken == 'false' || !accesstoken) accessToken = false;
 
   models.sequelize.query(`SELECT id, name, type, numberToAsk FROM Quizzes WHERE name SOUNDS LIKE ?`,
