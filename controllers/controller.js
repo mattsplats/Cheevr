@@ -315,10 +315,17 @@ router.delete('/api', (req, res) => {
 // Alexa API
 // Respond to quiz requests
 router.get('/alexa/:string', (req, res) => {
-
   const string      = req.params.string.split('.'),
         quizName    = string[0],
         accessToken = !string[1] || string[1] == 'false' || typeof string[1] !== 'string' ? false : string[1];
+
+  console.log();
+  console.log('==========================');
+  console.log('Alexa GET request');
+  console.log('quizName:', quizName);
+  console.log('accessToken:', accessToken);
+  console.log('==========================');
+  console.log();
 
   models.sequelize.query(`SELECT id, name, type, numberToAsk FROM Quizzes WHERE name SOUNDS LIKE ?`,
     {
@@ -328,7 +335,7 @@ router.get('/alexa/:string', (req, res) => {
   ).then(quiz => {
 
     // If a quiz was found
-    if (quiz.length > 0) {
+    if (quiz && quiz.length > 0) {
       models.Question.findAll(
         {
           attributes: ['id', 'q', 'a', 'choiceA', 'choiceB', 'choiceC', 'choiceD'],
@@ -350,7 +357,8 @@ router.get('/alexa/:string', (req, res) => {
         } else if (accessToken) {
           const options = {
             uri: `https://api.amazon.com/user/profile?access_token=${accessToken}`,
-            json: true
+            json: true,
+            resolveWithFullResponse: true
           };
 
           // Get ids of all questions in quiz
@@ -362,8 +370,10 @@ router.get('/alexa/:string', (req, res) => {
           // Query Amazon API for user profile
           rp(options).then(profile => {
 
+            console.log(profile);
+
             // Get the user database model
-            models.User.findOne({ where: {id: 2 }}).then(user => {
+            models.User.findOne({ where: { AmazonId: profile.user_id }}).then(user => {
               
               // If there is a user in the database
               if (user) {
@@ -414,10 +424,28 @@ router.get('/alexa/:string', (req, res) => {
                 });
               }
             })
+          }).catch(err => {  // If Amazon API gives bad response
+            console.log();
+            console.log('==========================');
+            console.log('ERROR: Response code', err.message);
+            console.log('==========================');
+            console.log();
+
+            res.json({
+              questions: questions.slice(0, numToAsk - 1),
+              name: quiz[0].dataValues.name,
+              type: quiz[0].dataValues.type
+            })
           })
 
         // If no access token was sent
         } else {
+          console.log();
+          console.log('==========================');
+          console.log('No access token');
+          console.log('==========================');
+          console.log();
+
           res.json({
             questions: questions.slice(0, numToAsk - 1),
             name: quiz[0].dataValues.name,
@@ -428,6 +456,12 @@ router.get('/alexa/:string', (req, res) => {
 
     // If no quiz was found
     } else {
+      console.log();
+      console.log('==========================');
+      console.log('Not found:', quizName);
+      console.log('==========================');
+      console.log();
+
       res.json({ name: false });
     }
   });
