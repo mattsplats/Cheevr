@@ -314,11 +314,14 @@ router.delete('/api', (req, res) => {
 
 // Alexa API
 // Respond to quiz requests
-router.get('/alexa/:quizName', (req, res) => {
+router.get('/alexa/:string', (req, res) => {
+
+  let [quizName, accessToken] = req.params.string.split('.');
+  if (accessToken == 'false' || !accesstoken) accessToken = false;
 
   models.sequelize.query(`SELECT id, name, type, numberToAsk FROM Quizzes WHERE name SOUNDS LIKE ?`,
     {
-      replacements: [req.params.quizName],
+      replacements: [quizName],
       model: models.Quiz
     }
   ).then(quiz => {
@@ -343,9 +346,9 @@ router.get('/alexa/:quizName', (req, res) => {
           });
 
         // If we are selecting a subset of questions for users
-        } else {
+        } else if (accessToken) {
           const options = {
-            uri: 'https://api.amazon.com/user/profile?access_token=' + req.body.accessToken,
+            uri: 'https://api.amazon.com/user/profile?accesstoken=' + accessToken,
             json: true
           };
 
@@ -411,6 +414,14 @@ router.get('/alexa/:quizName', (req, res) => {
               }
             })
           })
+
+        // If no access token was sent
+        } else {
+          res.json({
+            questions: questions.slice(0, numToAsk - 1),
+            name: quiz[0].dataValues.name,
+            type: quiz[0].dataValues.type
+          });
         }
       });
 
