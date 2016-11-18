@@ -77,6 +77,9 @@ router.get('/', (req, res) => res.render('index'));
 router.get('/selectquiz', (req, res) => res.render('layouts/selectquiz'));
 router.get('/createquiz', (req, res) => res.render('layouts/createquiz'));
 router.get('/gettingstarted', (req, res) => res.render('layouts/gettingstarted'));
+router.get('/search', (req, res)=> res.render('layouts/search'));
+router.get('/user', (req, res)=> res.render('layouts/user'));
+router.get('/edit', (req, res)=> res.render('layouts/edit'));
 
 // GET quiz data (accepts quiz id or quiz name)
 router.get('/api/quiz/:quizName', (req, res) => {
@@ -92,7 +95,7 @@ router.get('/api/quiz/:quizName', (req, res) => {
 });
 
 // GET quiz search
-router.get('/api/search/:quizName', (req, res) => 
+router.get('/api/search/:quizName', (req, res) =>
   models.Quiz.findAll({ where: { name: { $like: `%${req.params.quizName}%` }}}).then(quizzes =>
     res.json(quizzes)
   )

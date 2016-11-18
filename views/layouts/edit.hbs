@@ -2,24 +2,17 @@
   <div class="section no-pad-bot">
     <div class="container">
       <br><br>
-      <h1 class="header center light-green-text text-darken-2">Search</h1>
+      <h1 class="header center light-green-text text-darken-2">Edit</h1>
       <div class="row">
         <div class="col s3">
         </div>
-    <form class="col s8">
-        <div class="input-field col s8">
-          <a class="material-icons prefix" id="searchButton">search</a>
-          <input id="search" type="text" class="validate">
-          <label for="search">Search</label>
-      </div>
-    </form>
   </div>
   </div>
   <div class="parallax"><img src="/assets/images/diagmonds_@2X.png" alt="Change background for an original"></div>
   </div>
 </div>
 <div class="container">
-  <div class="section" id="displayQuiz">
+  <div class="section" id="editQuiz">
     <div class="row">
 
     </div>
@@ -40,10 +33,10 @@ var searchQuiz={
     var quizType;
     if(quiz.type==='trueFalse'){
       quizType="True or False";
-    } else if (quiz.type==='multipleChoice') {
+    } else if (quiz.test==='multipleChoice') {
       quizType="Multiple Choice";
     }
-    $("#displayQuiz").html("<div class='row'><div class='col s12 m6'><div class='card blue-grey darken-1'><div class='card-content white-text'><span class='card-title'>"+quiz.name+"</span><p>Type: "+quizType+"</p><p>Say: 'Alexa, ask cheevo to quiz me on "+quiz.name+"'</p></div><div class='card-action' id='displayQues'><a href='#' id='quesDisBut'>Display Questions</a></div></div></div></div>");
+    $("#editQuiz").html("<div class='row'><div class='col s12 m6'><div class='card blue-grey darken-1'><div class='card-content white-text'><span class='card-title'>"+quiz.name+"</span><p>Type: "+quizType+"</p><p>Say: 'Alexa, ask cheevo to quiz me on "+quiz.name+"'</p></div><div class='card-action' id='displayQues'><a href='#' id='quesDisBut'>Display Questions</a></div></div></div></div>");
   }
 };
 $("#searchButton").on('click', function(){

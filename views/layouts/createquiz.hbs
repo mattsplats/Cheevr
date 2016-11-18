@@ -44,12 +44,12 @@ var createQuizzes={
 
   //function to create a true or false quiz.
   trueFalseQuiz: function(){
-    $("#createQuiz").html("<div class='row center'><form class='col s12'><div class='input-field col s8'><input id='quizName' type='text' class='validate'><label for='quizName'>Quiz Name</label></div></form></div>");
+    createQuizzes.nameDesc();
     for(i=0; i<createQuizzes.totalQuestions; i++){
     $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='q"+i+"' type='text' class='validate'><label for='q"+i+"'>Question</label></div><div class='input-field col s4'><select id='a"+i+"'><option value='' disabled selected>Choose your option</option><option value='true'>True</option><option value='false'>False</option></select><label>Answer</label></div></form></div></div>");
     $('select').material_select();
     }
-    $('#buttonSection').append("<a id='addQuestion' class='btn-large waves-effect waves-light light-green darken-2'>+</a><a id='submitQuiz' class='btn-large waves-effect waves-light light-green darken-2'>Submit</a>");
+    createQuizzes.addSubmit();
     $('#addQuestion').on('click', function(){
       createQuizzes.totalQuestions++;
       var extra=createQuizzes.totalQuestions-1;
@@ -68,22 +68,18 @@ var createQuizzes={
       };
       var newQuiz={
         name: $("#quizName").val().trim(),
+        desc: $("#desc").val().trim(),
         type: createQuizzes.questionType,
         numberToAsk: 0,
         questions: createQuizzes.questions,
       };
-      console.log(newQuiz);
-      var currentURL = window.location.origin;
-      $.post(currentURL + '/api', newQuiz).done(function (data) {
-          console.log(data);
-          alert('New Quiz Created!');
-        });
+      createQuizzes.postQuiz(newQuiz);
     });
   },
 
   //function to create a multiple choice quiz.
   multipleChoice: function(){
-    $("#createQuiz").html("<div class='row'><form class='col s12'><div class='input-field col s8'><input id='quizName' type='text' class='validate'><label for='quizName'>Quiz Name</label></div></form></div>");
+    createQuizzes.nameDesc();
     for(i=0; i<createQuizzes.totalQuestions; i++){
     $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='q"+i+"' type='text' class='validate'><label for='q"+i+"'>Question</label></div><div class='input-field col s4'><select id='a"+i+"'><option value='' disabled selected>Choose your option</option><option value='a'>A</option><option value='b'>B</option><option value='c'>C</option><option value='d'>D</option></select><label>Correct Answer</label></div></form></div></div>");
     $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='choiceA"+i+"' type='text' class='validate'><label for='choiceA"+i+"'>Answer for option A</label></div></div>");
@@ -92,7 +88,7 @@ var createQuizzes={
     $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='choiceD"+i+"' type='text' class='validate'><label for='choiceA"+i+"'>Answer for option D</label></div></div>");
     $('select').material_select();
     }
-    $('#buttonSection').append("<a id='addQuestion' class='btn-large waves-effect waves-light light-green darken-2'>+</a><a id='submitQuiz' class='btn-large waves-effect waves-light light-green darken-2'>Submit</a>");
+    createQuizzes.addSubmit();
     $('#addQuestion').on('click', function(){
       createQuizzes.totalQuestions++;
       var extra=createQuizzes.totalQuestions-1;
@@ -123,17 +119,34 @@ var createQuizzes={
       };
       var newQuiz={
         name: $("#quizName").val().trim(),
+        desc: $("#desc").val().trim(),
         type: createQuizzes.questionType,
         numberToAsk: 0,
         questions: createQuizzes.questions,
       };
-      console.log(newQuiz);
-      var currentURL = window.location.origin;
-      $.post(currentURL + '/api', newQuiz).done(function (data) {
-          console.log(data);
-          alert('New Quiz Created!');
-        });
+      createQuizzes.postQuiz(newQuiz);
     });
+  },
+
+  //function for name and description input.
+  nameDesc: function(){
+    $("#createQuiz").html("<div class='row'><div class='col s3'></div><form class='col s8'><div class='input-field col s8'><input id='quizName' type='text' class='validate'><label for='quizName'>Quiz Name</label></div></form>");
+    $("#createQuiz").append("<div class='row'><div class='col s3'></div><form class='col s8'><div class='input-field col s8'><textarea id='desc' class='materialize-textarea'></textarea><label for='desc'>Description</label></div></form></div>")
+  },
+
+  //function for add and submit buttons.
+  addSubmit: function(){
+    $('#buttonSection').append("<div class='row'><div class='col s4'><a id='addQuestion' class='btn-large waves-effect waves-light light-green darken-2'><i class='material-icons right'>note_add</i>Add Question</a></div><div class='col s4'></div><div class='col s4'><a id='submitQuiz' class='btn-large waves-effect waves-light light-green darken-2'><i class='material-icons right'>send</i>Submit</a></div></div>");
+  },
+
+  //function to post new quiz.
+  postQuiz:function(newQuiz){
+    console.log(newQuiz);
+    var currentURL = window.location.origin;
+    $.post(currentURL + '/api', newQuiz).done(function (data) {
+        console.log(data);
+        Materialize.toast('Quiz Added!', 4000)
+      });
   }
 };
 
