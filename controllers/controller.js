@@ -320,8 +320,6 @@ router.get('/alexa/:string', (req, res) => {
         quizName    = string[0],
         accesstoken = string[1] == 'false' || !string[1] ? false : string[1];
 
-  if (accessToken == 'false' || !accesstoken) accessToken = false;
-
   models.sequelize.query(`SELECT id, name, type, numberToAsk FROM Quizzes WHERE name SOUNDS LIKE ?`,
     {
       replacements: [quizName],
