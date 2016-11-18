@@ -354,7 +354,7 @@ router.get('/alexa/:string', (req, res) => {
           });
 
         // If we are selecting a subset of questions for users
-        } else if (accessToken) {
+        } else if (accessToken || true) {
           const options = {
             uri: `https://api.amazon.com/user/profile?access_token=${accessToken}`,
             json: true
@@ -390,8 +390,8 @@ router.get('/alexa/:string', (req, res) => {
                   // Iterate through questions and push questions user has not taken to qArr
                   while (i < questions.length && qArr.length < numToAsk) {
 
-                    // If questions have not been taken (are not in UserQuestion) AND have not been selected already (are not in qArr)
-                    if (questions.indexOfProp(ids[i], 'dataValues', 'id') === -1 && qArr.indexOfProp(ids[i], 'dataValues', 'QuestionId') === -1) qArr.push(questions[i]);
+                    // If user has never tried question (is not in UserQuestion) AND question has not been selected already (is not in qArr)
+                    if (uq.indexOfProp(ids[i], 'dataValues', 'QuestionId') === -1 && qArr.indexOfProp(ids[i], 'dataValues', 'id') === -1) qArr.push(questions[i]);
 
                     i++;
                   }
@@ -401,7 +401,7 @@ router.get('/alexa/:string', (req, res) => {
                   while (qArr.length < numToAsk) {
 
                     // Quadratic random number distribution (skews towards UserQuestions with low accuracy)
-                    const index = Math.floor(Math.pow(Math.random(), 2) * uq.length);;
+                    const index = Math.floor(Math.pow(Math.random(), 2) * uq.length);
 
                     // If qArr does not have a question with chosen index's id, push question from questions where id === uq[index].id
                     if (qArr.indexOfProp(uq[index].dataValues.QuestionId, 'dataValues', 'id') === -1) qArr.push(questions[questions.indexOfProp(uq[index].dataValues.QuestionId, 'dataValues', 'id')]);
