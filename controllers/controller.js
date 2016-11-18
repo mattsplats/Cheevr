@@ -222,6 +222,7 @@ router.post('/api', (req, res) => {
         if (user) {
           models.Quiz.create({
             name: req.body.name,
+            desc: req.body.desc,
             type: req.body.type,
             OwnerId: user.id,
             OwnerDisplayName: user.displayName,
