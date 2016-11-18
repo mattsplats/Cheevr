@@ -318,7 +318,7 @@ router.get('/alexa/:string', (req, res) => {
 
   const string      = req.params.string.split('.'),
         quizName    = string[0],
-        accesstoken = string[1] == 'false' || !string[1] ? false : string[1];
+        accessToken = string[1] == 'false' || !string[1] ? false : string[1];
 
   models.sequelize.query(`SELECT id, name, type, numberToAsk FROM Quizzes WHERE name SOUNDS LIKE ?`,
     {
