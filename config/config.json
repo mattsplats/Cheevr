@@ -1,14 +1,15 @@
+
 {
   "development": {
-    "username": "gael",
-    "password": "07G15a92",
+    "username": "root",
+    "password": "j5M@jXA%NbS4",
     "database": "quiz_db",
     "host": "localhost",
     "dialect": "mysql"
   },
   "test": {
-    "username": "gael",
-    "password": "07G15a92",
+    "username": "root",
+    "password": "j5M@jXA%NbS4",
     "database": "quiz_db",
     "host": "localhost",
     "dialect": "mysql"

@@ -1,43 +1,57 @@
-body {
-  /* http://lea.verou.me/css3patterns/#blueprint-grid */
-  background-color: #BBDDF5;
-  background-image: linear-gradient(white 2px, transparent 2px),
-    linear-gradient(90deg, white 2px, transparent 2px),
-    linear-gradient(rgba(255,255,255,.3) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.3) 1px, transparent 1px);
-  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
-  background-position: -2px -2px, -2px -2px, -1px -1px, -1px -1px;
+/* Custom Stylesheet */
+/**
+ * Use this file to override Materialize files so you can update
+ * the core Materialize files in the future
+ *
+ * Made By MaterializeCSS.com
+ */
 
-  font-family: 'Raleway', sans-serif;
-  font-size: 200%;
+nav ul a,
+nav .brand-logo {
+  color: #444;
 }
 
-body, h1, h2 {
-  font-weight: 800;
+p {
+  line-height: 2rem;
 }
 
-select {
-  border-radius: 4px; 
-  border: 1px solid #AAA;
+.button-collapse {
+  color: #26a69a;
 }
 
-.jumbotron {
-  background-color: white;
+.parallax-container {
+  min-height: 380px;
+  line-height: 0;
+  height: auto;
+  color: rgba(255,255,255,.9);
+}
+  .parallax-container .section {
+    width: 100%;
+  }
+
+@media only screen and (max-width : 992px) {
+  .parallax-container .section {
+    position: absolute;
+    top: 40%;
+  }
+  #index-banner .section {
+    top: 10%;
+  }
 }
 
-.list-group-item {
-  padding: 5px;
+@media only screen and (max-width : 600px) {
+  #index-banner .section {
+    top: 0;
+  }
 }
 
-.form-control {
-  font-size: 100%;
+.icon-block {
+  padding: 0 15px;
+}
+.icon-block .material-icons {
+  font-size: inherit;
 }
 
-#done {
-  color: lightgrey;
-}
-
-/* Custom classes */
-.min-height {
-  min-height: 313px;  /* Permits 5 tasks or 4 completed without movement */
+footer.page-footer {
+  margin: 0;
 }

@@ -12,9 +12,10 @@ const express = require('express'),
       sse     = new expsse(['keepAlive']),
       router  = express.Router();
 
-Array.prototype.indexOfProp = function (prop, value) {
+Array.prototype.indexOfProp = function (value, prop1, prop2) {
   for (var i = 0; i < this.length; i++) {
-    if (this[i][prop] === value) return i;
+    if (prop2) if (this[i] && this[i][prop1][prop2] === value) return i;
+    else if (this[i] && this[i][prop1] === value) return i;
   }
 
   return -1;
@@ -33,8 +34,23 @@ function authUser (req, res) {
     }
 
   } else {
-    return { where: { displayName: 'Dummy User' }};
+    return { where: { id: 1 }};
   }
+}
+
+// True if user is logged in (or local env), false otherwise
+function isLoggedIn (req, res) {
+  if (process.env.AMAZON_CLIENT_ID) return !!req.session.passport;
+  return true;
+}
+
+// Render page with user's first name
+function renderWithUsername (uri, req, res) {
+  if (isLoggedIn(req, res)) {
+    models.User.findOne(authUser(req, res))
+    .then(user => res.render(uri, { isLoggedIn: true, username: user.displayName.split(" ")[0] }))
+
+  } else res.render('index', { isLoggedIn: false });
 }
 
 // Input verification for POST/PUT/DELETE routes
@@ -72,14 +88,39 @@ setInterval(keepAlive, 50000);
 
 
 // Web API
-// View GET routes
-router.get('/', (req, res) => res.render('index'));
-router.get('/selectquiz', (req, res) => res.render('layouts/selectquiz'));
-router.get('/createquiz', (req, res) => res.render('layouts/createquiz'));
-router.get('/gettingstarted', (req, res) => res.render('layouts/gettingstarted'));
-router.get('/search', (req, res)=> res.render('layouts/search'));
-router.get('/user', (req, res)=> res.render('layouts/user'));
-router.get('/edit', (req, res)=> res.render('layouts/edit'));
+// Non-auth web routes
+router.get('/', (req, res) => renderWithUsername('index', req, res));
+router.get('/gettingstarted', (req, res) => renderWithUsername('layouts/gettingstarted', req, res));
+router.get('/search', (req, res) => renderWithUsername('layouts/search', req, res));
+
+// Auth required web routes
+router.get('/user_results', (req, res) => {
+  const whereCondition = authUser(req, res);
+
+  if (whereCondition) {
+    models.User.findOne(whereCondition).then(user => {
+      if (user) {
+        models.Quiz.findAll({
+          where: { OwnerId: user.id },
+          include: models.Question
+        }).then(quizzes => {   // Get in order of last quiz taken
+          user.dataValues.quizzes = quizzes;
+          res.render('layouts/user_results', {
+            isLoggedIn: isLoggedIn(req, res),
+            username: user.displayName.split(" ")[0],
+            user: user,
+            quizzes: user.dataValues.quizzes
+          });
+        })
+
+      } else {
+        res.send('No user by that ID');
+      }
+    })
+  }
+});
+router.get('/user_quizzes', (req, res) => renderWithUsername('layouts/user_quizzes', req, res));
+router.get('/user_create', (req, res) => renderWithUsername('layouts/user_create', req, res));
 
 // GET quiz data (accepts quiz id or quiz name)
 router.get('/api/quiz/:quizName', (req, res) => {
@@ -94,25 +135,49 @@ router.get('/api/quiz/:quizName', (req, res) => {
   );
 });
 
-// GET quiz search
-router.get('/api/search/:quizName', (req, res) =>
-  models.Quiz.findAll({ where: { name: { $like: `%${req.params.quizName}%` }}}).then(quizzes =>
+// GET all quizzes
+router.get('/api/quizzes', (req, res) =>
+  models.Quiz.findAll().then(quizzes => 
     res.json(quizzes)
   )
 );
 
-// GET user data
-router.get('/api/user', (req, res) => {
+// GET quiz search (returns exact name first, then near matches, then quizzes with search term in desc)
+router.get('/api/search/:quizName', (req, res) =>
+  models.Quiz.findOne({
+    where: { name: req.params.quizName },
+    include: [models.Question]
+  }).then(quizByName =>
+    models.Quiz.findAll({
+      where: { name: { $like: `%${req.params.quizName}%` }},
+      include: [models.Question]
+    }).then(quizzesByName =>
+      models.Quiz.findAll({
+        where: { desc: { $like: `%${req.params.quizName}%` }},
+        include: [models.Question]
+      }).then(quizzesByDesc => {
+        let quizzes = quizByName ? [quizByName] : [];  // Final list
+
+        for (let i = 0; i < quizzesByName.length; i++) {
+          if (quizzes.indexOfProp(quizzesByName[i].dataValues.id, 'dataValues', 'id') === -1) quizzes.push(quizzesByName[i]);
+        }
+        for (let i = 0; i < quizzesByDesc.length; i++) {
+          if (quizzes.indexOfProp(quizzesByDesc[i].dataValues.id, 'dataValues', 'id') === -1) quizzes.push(quizzesByDesc[i]);
+        }
+        res.json(quizzes);
+      })
+    )
+  )
+);
+
+// GET user data by UserQuiz order
+router.get('/api/userStats', (req, res) => {
   const whereCondition = authUser(req, res);
 
   if (whereCondition) {
     models.User.findOne(whereCondition).then(user => {
       if (user) {
-        user.getQuizzes(
-          {
-            order: 'UserQuiz.updatedAt DESC'  // Get in order of last quiz taken
-          }
-        ).then(quizzes => {
+        user.getQuizzes({ order: 'UserQuiz.updatedAt DESC' }).then(quizzes => {   // Get in order of last quiz taken
           user.dataValues.quizzes = quizzes;
           res.json(user);
         })
@@ -249,11 +314,14 @@ router.delete('/api', (req, res) => {
 
 // Alexa API
 // Respond to quiz requests
-router.get('/alexa/:quizName', (req, res) => {
+router.get('/alexa/:string', (req, res) => {
+
+  let [quizName, accessToken] = req.params.string.split('.');
+  if (accessToken == 'false' || !accesstoken) accessToken = false;
 
   models.sequelize.query(`SELECT id, name, type, numberToAsk FROM Quizzes WHERE name SOUNDS LIKE ?`,
     {
-      replacements: [req.params.quizName],
+      replacements: [quizName],
       model: models.Quiz
     }
   ).then(quiz => {
@@ -278,54 +346,82 @@ router.get('/alexa/:quizName', (req, res) => {
           });
 
         // If we are selecting a subset of questions for users
-        } else {
+        } else if (accessToken) {
+          const options = {
+            uri: 'https://api.amazon.com/user/profile?accesstoken=' + accessToken,
+            json: true
+          };
 
-          // Get ids of all questions in quiz
-          let ids = [];
-          for (let i = 0; i < questions.length; i++) {
-            ids.push(questions[i].id);
-          }
+          // Query Amazon API for user profile
+          rp(options).then(profile => {
 
-          // Get questions user has already taken
-          models.User.findOne({ where: { displayName: 'Dummy User' }}).then(user => {
-            models.UserQuestion.findAll({
-              where: {
-                QuestionId: { $in: ids },
-                UserId: user.id
-              },
-              order: ['accuracy']
-            }).then(uq => {
-              let qArr = [],  // Questions to send
-                  i    = 0;
+            // Get the user database model
+            models.User.findOne({ where: { AmazonId: profile.user_id }}).then(user => {
 
-              // Iterate through questions and push questions user has not taken to qArr
-              while (i < questions.length && qArr.length < numToAsk) {
+              // If there is a user in the database
+              if (user) {
+                models.UserQuestion.findAll({
+                  where: {
+                    QuestionId: { $in: ids },
+                    UserId: user.id
+                  },
+                  order: ['accuracy']
+                }).then(uq => {
+                  let qArr = [],  // Questions to send
+                      i    = 0,
+                      ids  = [];  // IDs of all questions in quiz
 
-                // If questions have not been taken (are not in UserQuestion) AND have not been selected already (are not in qArr)
-                if (uq.indexOfProp('id', ids[i]) === -1 && qArr.indexOfProp('id', ids[i]) === -1) qArr.push(questions[i]);
+                  // Fill ids
+                  for (let i = 0; i < questions.length; i++) {
+                    ids.push(questions[i].id);
+                  };
 
-                i++;
+                  // Iterate through questions and push questions user has not taken to qArr
+                  while (i < questions.length && qArr.length < numToAsk) {
+
+                    // If questions have not been taken (are not in UserQuestion) AND have not been selected already (are not in qArr)
+                    if (uq.indexOfProp(ids[i], 'id') === -1 && qArr.indexOfProp(ids[i], 'id') === -1) qArr.push(questions[i]);
+
+                    i++;
+                  }
+
+                  // If we need more questions to meet numToAsk
+                  // Iterate through uq and push questions user did poorly on to qArr
+                  while (qArr.length < numToAsk) {
+
+                    // Quadratic random number distribution (skews towards UserQuestions with low accuracy)
+                    const rand  = Math.random(),
+                          index = Math.floor(rand * rand) * uq.length;
+
+                    // If qArr does not have a question with chosen index's id, push question from questions where id === uq[index].id
+                    if (qArr.indexOfProp(uq[index].id, 'id') === -1) qArr.push(questions[questions.indexOfProp(uq[index].id, 'id')]);
+                  }
+
+                  res.json({
+                    questions: shuffle(qArr),
+                    name: quiz[0].dataValues.name,
+                    type: quiz[0].dataValues.type
+                  });
+                });
+
+              // If there is no user in the database yet
+              } else {
+                res.json({
+                  questions: questions.slice(0, numToAsk - 1),
+                  name: quiz[0].dataValues.name,
+                  type: quiz[0].dataValues.type
+                });
               }
-
-              // If we need more questions to meet numToAsk
-              // Iterate through uq and push questions user did poorly on to qArr
-              while (qArr.length < numToAsk) {
-
-                // Quadratic random number distribution (skews towards UserQuestions with low accuracy)
-                const rand  = Math.random(),
-                      index = Math.floor(rand * rand) * uq.length;
-
-                // If qArr does not have a question with chosen index's id, push question from questions where id === uq[index].id
-                if (qArr.indexOfProp('id', uq[index].id) === -1) qArr.push(questions[questions.indexOfProp('id', uq[index].id)]);
-              }
-
-              res.json({
-                questions: shuffle(qArr),
-                name: quiz[0].dataValues.name,
-                type: quiz[0].dataValues.type
-              });
             })
           })
+
+        // If no access token was sent
+        } else {
+          res.json({
+            questions: questions.slice(0, numToAsk - 1),
+            name: quiz[0].dataValues.name,
+            type: quiz[0].dataValues.type
+          });
         }
       });
 
@@ -346,14 +442,7 @@ router.post('/alexa', (req, res) => {
     };
 
     rp(options).then(profile => {
-      console.log(profile);
-
-      models.User.findOrCreate({
-        where: {
-          AmazonId: profile.user_id,
-          displayName: profile.name
-        }
-      }).then(user => {
+      models.User.findOrCreate({ where: { AmazonId: profile.user_id }}).spread((user, wasCreated) => {
 
         // Update Quiz table
         models.Quiz.findOne({ where: { name: req.body.name }}).then(quiz => {
@@ -366,7 +455,8 @@ router.post('/alexa', (req, res) => {
             {
               timesAttempted: quiz.timesAttempted,
               timesSucceeded: quiz.timesSucceeded,
-              accuracy: quiz.accuracy
+              accuracy: quiz.accuracy,
+              totalAttempts: quiz.totalAttempts + 1
             },
             { where: { id: quiz.id }
           });
@@ -384,7 +474,10 @@ router.post('/alexa', (req, res) => {
                   timesSucceeded: uq.timesSucceeded,
                   accuracy: uq.accuracy
                 },
-                { where: { QuizId: quiz.id }
+                { where: {
+                  UserId: user.id,
+                  QuizId: quiz.id
+                }
               });
             })
           })

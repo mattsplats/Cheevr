@@ -6,13 +6,13 @@
       <div class="row">
         <div class="col s3">
         </div>
-    <form class="col s8">
+    <div class="col s8">
         <div class="input-field col s8">
           <a class="material-icons prefix" id="searchButton">search</a>
           <input id="search" type="text" class="validate">
           <label for="search">Search</label>
       </div>
-    </form>
+    </div>
   </div>
   </div>
   <div class="parallax"><img src="/assets/images/diagmonds_@2X.png" alt="Change background for an original"></div>
@@ -49,4 +49,8 @@ var searchQuiz={
 $("#searchButton").on('click', function(){
   searchQuiz.getQuiz();
 });
+
+$("#search").on('keypress', function (e) {
+  if (e.keyCode === 13) $("#searchButton").click();
+})
 </script>

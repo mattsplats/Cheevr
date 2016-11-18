@@ -12,6 +12,7 @@ const express        = require('express'),
       // Local dependencies
       routes = require('./controllers/controller.js'),
       models = require('./models'),
+      seeder = require('./seeders'),
 
       // Const vars
       app  = express(),
@@ -36,7 +37,7 @@ if (process.env.AMAZON_CLIENT_ID) {
   app.use(session(
     {
       secret: process.env.SESSION_SECRET,
-      cookie: { maxAge: 60000 },
+      cookie: { maxAge: 3600000 },
       resave: false,
       saveUninitialized: false,
       store: new SequelizeStore({
@@ -83,107 +84,11 @@ if (process.env.AMAZON_CLIENT_ID) {
   });
   
   app.get('/auth/amazon',          passport.authenticate('amazon', {scope: ['profile']}));
-  app.get('/auth/amazon/callback', passport.authenticate('amazon', {successRedirect: '/', failureRedirect: '/login'}));
+  app.get('/auth/amazon/callback', passport.authenticate('amazon', {successRedirect: '/user_results', failureRedirect: '/'}));
 }
 
 // Sequelize init
-// Drop all tables
-models.sequelize.query('SET FOREIGN_KEY_CHECKS = 0').then(() => 
-  models.sequelize.sync({force:true}))
-
-// Create dummy user
-  .then(() => models.User.create({
-    AmazonId: 'nothing to see here',
-    displayName: 'Dummy User',
-    Quizzes: [
-      {
-        name: 'capitals',
-        type: 'trueFalse',
-        OwnerId: 1,
-        OwnerDisplayName: 'Dummy User'
-      },
-      {
-        name: 'vocab',
-        type: 'multipleChoice',
-        OwnerId: 1,
-        OwnerDisplayName: 'Dummy User'
-      }
-    ]
-  },
-  {
-    include: [models.Quiz]
-  })
-)
-
-// Create true/false quiz
-.then(() => 
-  models.Quiz.findOne(
-    {
-      where: {name: 'capitals'}
-    }
-  ).then(quiz => {
-    models.Question.create({
-      q: 'Austin is the capital of Texas',
-      a: 'true'
-    }).then(question => 
-      quiz.addQuestion(question)
-    )
-
-    models.Question.create({
-      q: 'Chicago is the capital of Illinois',
-      a: 'false'
-    }).then(question =>
-      quiz.addQuestion(question)
-    )
-  })
-)
-
-// Create multiple choice quiz
-.then(() => 
-  models.Quiz.findOne(
-    {
-      where: {name: 'vocab'}
-    }
-  ).then(quiz => {
-    models.Question.create({
-      q: 'For the word: accurate, what is the best synonym?',
-      a: 'd',
-      choiceA: 'recent',
-      choiceB: 'better',
-      choiceC: 'pleased',
-      choiceD: 'correct'
-    }).then(question => 
-      quiz.addQuestion(question)
-    );
-
-    models.Question.create({
-      q: 'For the word: prohibit, what is the best synonym?',
-      a: 'b',
-      choiceA: 'lose',
-      choiceB: 'ban',
-      choiceC: 'sigh',
-      choiceD: 'reflect'
-    }).then(question =>
-      quiz.addQuestion(question)
-    );
-
-    models.Question.create({
-      q: 'For the word: definitely, what is the best synonym?',
-      a: 'c',
-      choiceA: 'quickly',
-      choiceB: 'easily',
-      choiceC: 'certainly',
-      choiceD: 'only'
-    }).then(question =>
-      quiz.addQuestion(question)
-    );
-  })
-)
-
-// Re-enable foreign key checks 
-.then(() => models.sequelize.query('SET FOREIGN_KEY_CHECKS = 1'));
-
-
+seeder(models);
 
 // Route for static content
 app.use(express.static(process.cwd() + '/public'));
