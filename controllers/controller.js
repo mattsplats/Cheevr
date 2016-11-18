@@ -357,8 +357,7 @@ router.get('/alexa/:string', (req, res) => {
         } else if (accessToken) {
           const options = {
             uri: `https://api.amazon.com/user/profile?access_token=${accessToken}`,
-            json: true,
-            resolveWithFullResponse: true
+            json: true
           };
 
           // Get ids of all questions in quiz
