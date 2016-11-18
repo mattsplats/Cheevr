@@ -318,7 +318,7 @@ router.get('/alexa/:string', (req, res) => {
 
   const string      = req.params.string.split('.'),
         quizName    = string[0],
-        accessToken = !string[1] || string[1] == 'false' ? 'false' : string[1];
+        accessToken = !string[1] || string[1] == 'false' ? false : string[1];
 
   models.sequelize.query(`SELECT id, name, type, numberToAsk FROM Quizzes WHERE name SOUNDS LIKE ?`,
     {
@@ -349,7 +349,7 @@ router.get('/alexa/:string', (req, res) => {
         // If we are selecting a subset of questions for users
         } else if (accessToken) {
           const options = {
-            uri: 'https://api.amazon.com/user/profile?access_token=' + accessToken,
+            uri: `https://api.amazon.com/user/profile?access_token=${accessToken}`,
             json: true
           };
 
