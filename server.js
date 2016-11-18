@@ -88,7 +88,8 @@ if (process.env.AMAZON_CLIENT_ID) {
 }
 
 // Sequelize init
-seeder(models);
+// seeder(models);
+models.sequelize.sync();
 
 // Route for static content
 app.use(express.static(process.cwd() + '/public'));

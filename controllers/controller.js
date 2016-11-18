@@ -318,7 +318,7 @@ router.get('/alexa/:string', (req, res) => {
 
   const string      = req.params.string.split('.'),
         quizName    = string[0],
-        accessToken = !string[1] || string[1] == 'false' ? false : string[1];
+        accessToken = !string[1] || string[1] == 'false' || typeof string[1] !== 'string' ? false : string[1];
 
   models.sequelize.query(`SELECT id, name, type, numberToAsk FROM Quizzes WHERE name SOUNDS LIKE ?`,
     {
@@ -353,11 +353,17 @@ router.get('/alexa/:string', (req, res) => {
             json: true
           };
 
+          // Get ids of all questions in quiz
+          let ids = [];
+          for (let i = 0; i < questions.length; i++) {
+            ids.push(questions[i].id);
+          }
+
           // Query Amazon API for user profile
           rp(options).then(profile => {
 
             // Get the user database model
-            models.User.findOne({ where: { AmazonId: profile.user_id }}).then(user => {
+            models.User.findOne({ where: {id: 2 }}).then(user => {
               
               // If there is a user in the database
               if (user) {
@@ -368,20 +374,15 @@ router.get('/alexa/:string', (req, res) => {
                   },
                   order: ['accuracy']
                 }).then(uq => {
-                  let qArr = [],  // Questions to send
-                      i    = 0,
-                      ids  = [];  // IDs of all questions in quiz
 
-                  // Fill ids
-                  for (let i = 0; i < questions.length; i++) {
-                    ids.push(questions[i].id);
-                  };
+                  let qArr = [],  // Questions to send
+                      i    = 0;
 
                   // Iterate through questions and push questions user has not taken to qArr
                   while (i < questions.length && qArr.length < numToAsk) {
 
                     // If questions have not been taken (are not in UserQuestion) AND have not been selected already (are not in qArr)
-                    if (uq.indexOfProp(ids[i], 'id') === -1 && qArr.indexOfProp(ids[i], 'id') === -1) qArr.push(questions[i]);
+                    if (questions.indexOfProp(ids[i], 'dataValues', 'id') === -1 && qArr.indexOfProp(ids[i], 'dataValues', 'QuestionId') === -1) qArr.push(questions[i]);
 
                     i++;
                   }
@@ -391,11 +392,10 @@ router.get('/alexa/:string', (req, res) => {
                   while (qArr.length < numToAsk) {
 
                     // Quadratic random number distribution (skews towards UserQuestions with low accuracy)
-                    const rand  = Math.random(),
-                          index = Math.floor(rand * rand) * uq.length;
+                    const index = Math.floor(Math.pow(Math.random(), 2) * uq.length);;
 
                     // If qArr does not have a question with chosen index's id, push question from questions where id === uq[index].id
-                    if (qArr.indexOfProp(uq[index].id, 'id') === -1) qArr.push(questions[questions.indexOfProp(uq[index].id, 'id')]);
+                    if (qArr.indexOfProp(uq[index].dataValues.QuestionId, 'dataValues', 'id') === -1) qArr.push(questions[questions.indexOfProp(uq[index].dataValues.QuestionId, 'dataValues', 'id')]);
                   }
 
                   res.json({
