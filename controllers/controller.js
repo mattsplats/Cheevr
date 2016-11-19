@@ -50,7 +50,7 @@ function renderWithUsername (uri, req, res) {
     models.User.findOne(authUser(req, res))
     .then(user => res.render(uri, { isLoggedIn: true, username: user.displayName.split(" ")[0] }))
 
-  } else res.render('index', { isLoggedIn: false });
+  } else res.render(uri, { isLoggedIn: false });
 }
 
 // Input verification for POST/PUT/DELETE routes
