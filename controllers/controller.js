@@ -109,7 +109,7 @@ router.get('/user_results', (req, res) =>  {
         )
 
       } else {
-        res.send('No user by that ID');
+        res.json({ error: 'No user by that ID' });
       }
     })
   }
@@ -134,12 +134,44 @@ router.get('/user_quizzes', (req, res) => {
         })
 
       } else {
-        res.send('No user by that ID');
+        res.json({ error: 'No user by that ID' });
       }
     })
   }
 });
 router.get('/user_create', (req, res) => renderWithUsername('layouts/user_create', req, res));
+// router.get('/user_edit/:id', (req, res) => {
+//   const whereCondition = authUser(req, res);
+
+//   if (whereCondition) {
+//     models.User.findOne(whereCondition).then(user => {
+//       if (user) {
+//         models.Quiz.findOne({
+//           where: {
+//             OwnerId: user.id,
+//             id: req.params.id
+//           },
+//           include: models.Question
+//         }).then(quiz => {
+//           if (quiz) {
+//             res.render('layouts/user_quizzes', {
+//               isLoggedIn: isLoggedIn(req, res),
+//               username: user.displayName.split(" ")[0],
+//               id: id,
+//               quiz: quiz
+//             });
+
+//           } else {
+//             res.json({ error: 'Quiz not owned by current user' });
+//           }
+//         })
+
+//       } else {
+//         res.json({ error: 'No user by that ID' });
+//       }
+//     })
+//   }
+// });
 
 // GET quiz data (accepts quiz id or quiz name)
 router.get('/api/quiz/:quizName', (req, res) => {

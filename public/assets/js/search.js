@@ -4,7 +4,7 @@ $(function () {
 
     for (const question of quiz) {
       const template = `
-<div class="row no-margin-bot">
+<div class="row no-margin"><br/>
   <div class="col s12">
     <div class="card grey darken-1 no-margin">
       <div class="card-content white-text">
@@ -33,20 +33,25 @@ $(function () {
       $.get(`/api/search/${searchTerm}`).then(data => {
         let htmlString = '';
 
-        for (const quiz of data) {
+        for (var i = 0; i < data.length; i++) {
           const template = `
 <div class="row">
   <div class="col s12">
     <div class="card blue-grey darken-1">
       <div class="card-content white-text">
-        <span class="card-title">${quiz.name}</span>
+        <span class="card-title">${data[i].name}</span>
         <div class="right pad-right">
-          <br/>Taken: ${quiz.totalAttempts} Times
+          <br/>Taken: ${data[i].totalAttempts} Times
         </div>
-        <p class="flavor-text grey-text text-lighten-1">Say: "Alexa, ask cheevo to quiz me on ${quiz.name}"</p>
-        <div class="chip">${quiz.desc}</div>
-        <br/><br/>
-        ${renderQuestions(quiz.Questions)}
+        <p class="flavor-text grey-text text-lighten-1">Say: "Alexa, ask cheevo to quiz me on ${data[i].name}"</p>
+        <div class="chip">${data[i].desc}</div>
+        <div class="right pad-right">
+          <a class="waves-effect waves-light btn btn-showq" data-id=${i}>SHOW QUESTIONS</a>
+        </div>
+        <br/>
+        <div id="questions_${i}" data-vis="false" style="display: none;">
+          ${renderQuestions(data[i].Questions)}
+        </div>
       </div>
     </div>
   </div>

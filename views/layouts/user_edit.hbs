@@ -1,0 +1,113 @@
+<div>
+  <div class="section light-green">
+    <h3 class="header center white-text">Edit Quiz</h3>
+  </div>
+</div>
+<div class="container">
+  <br/>
+
+  <!-- Form -->
+  <div class="row">
+    <form class="col s12">
+
+      <!-- Name/type -->
+      <div class="row">
+        <div class="input-field col m6 s12">
+          <input id="name" type="text" class="validate" required>
+          <label for="name">Quiz Name</label>
+        </div>
+        <div class="input-field col m6 s6">
+          <select id="questionType" data-type="trueFalse">
+            <option value="trueFalse">True or False</option>
+            <option value="multipleChoice">Multiple Choice</option>
+          </select>
+          <label>Quiz Type</label>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="row">
+        <div class="input-field col s12">
+          <textarea id="desc" class="materialize-textarea"></textarea>
+          <label for="desc">Description</label>
+        </div>
+      </div>
+
+      <!-- Input rows -->
+      <div id="input">
+
+        <div id="block_1">
+          <!-- True/False Statement 1 -->
+          <div class="row">
+            <div class="input-field col m8 s12">
+              <input id="q_1" type="text" class="validate">
+              <label for="q_1">True/False Statement 1</label>
+            </div>
+            <div class="input-field col m4 s6">
+              <select id="a_1" required>
+                <option disabled selected value="">Correct answer?</option>
+                <option value="true">true</option>
+                <option value="false">false</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- True/False Statement 2 -->
+        <div id="block_2">
+          <div class="row">
+            <div class="input-field col m8 s12">
+              <input id="q_2" type="text" class="validate">
+              <label for="q_2">True/False Statement 2</label>
+            </div>
+            <div class="input-field col m4 s6">
+              <select id="a_2">
+                <option disabled selected value="">Correct answer?</option>
+                <option value="true">true</option>
+                <option value="false">false</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div id="block_3">
+          <!-- True/False Statement 3 -->
+          <div class="row">
+            <div class="input-field col m8 s12">
+              <input id="q_3" type="text" class="validate">
+              <label for="q_3">True/False Statement 3</label>
+            </div>
+            <div class="input-field col m4 s6">
+              <select id="a_3">
+                <option disabled selected value="">Correct answer?</option>
+                <option value="true">true</option>
+                <option value="false">false</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </form>
+  </div>
+  <div class="section" id="buttonSection">
+    <br/>
+    <div class="row">
+      <div class="col s8">
+        <a id="addQuestion" class="btn-large waves-effect waves-light light-green darken-2">Add Question
+          <i class="material-icons right">note_add</i>
+        </a>
+        <a id="rmQuestion" class="btn-large waves-effect waves-light light-green darken-2" style="display: none;">Remove Question
+          <i class="material-icons right">delete</i>
+        </a>
+      </div>
+      <div class="col s4 right-align">
+        <button id="submitQuiz" class="btn-large waves-effect waves-light light-green darken-2" type="submit">Submit
+          <i class="material-icons right">send</i>
+        </button>
+      </div>
+    </div>
+  </div> 
+</div>
+
+<script src="assets/js/form.js"></script>
