@@ -1,5 +1,5 @@
 <div id="page" data-title="edit" data-id="{{quiz.id}}">
-  <div class="section blue lighten-2">
+  <div class="section blue">
     <h3 class="header center white-text">Edit Quiz</h3>
   </div>
 </div>
@@ -17,9 +17,9 @@
           <label for="name">Quiz Name</label>
         </div>
         <div class="input-field col m6 s6">
-          <select id="questionType" data-type="trueFalse">
+          <select id="questionType" data-type="{{#if isMC}}multipleChoice{{else}}trueFalse{{/if}}">
             <option value="trueFalse">True or False</option>
-            <option value="multipleChoice">Multiple Choice</option>
+            <option value="multipleChoice" {{#if isMC}}selected{{/if}}>Multiple Choice</option>
           </select>
           <label>Quiz Type</label>
         </div>
@@ -41,15 +41,15 @@
     <br/>
     <div class="row">
       <div class="col s8">
-        <a id="addQuestion" class="btn-large waves-effect waves-light light-green darken-2">Add Question
+        <a id="addQuestion" class="btn-large waves-effect waves-light blue darken-2">Add Question
           <i class="material-icons right">note_add</i>
         </a>
-        <a id="rmQuestion" class="btn-large waves-effect waves-light light-green darken-2" style="display: none;">Remove Question
+        <a id="rmQuestion" class="btn-large waves-effect waves-light blue darken-2" style="display: none;">Remove Question
           <i class="material-icons right">delete</i>
         </a>
       </div>
       <div class="col s4 right-align">
-        <button id="submitQuiz" class="btn-large waves-effect waves-light light-green darken-2" type="submit">Submit
+        <button id="submitQuiz" class="btn-large waves-effect waves-light blue darken-2" type="submit">Submit
           <i class="material-icons right">send</i>
         </button>
       </div>
