@@ -148,16 +148,17 @@ router.get('/user_edit.:id', (req, res) => {
       if (user) {
         models.Quiz.findOne({
           where: {
-            OwnerId: user.id,
             id: req.params.id
           },
           include: models.Question
         }).then(quiz => {
           if (quiz) {
+            console.log(quiz);
             res.render('layouts/user_edit', {
               isLoggedIn: isLoggedIn(req, res),
               username: user.displayName.split(" ")[0],
-              quiz: quiz
+              quiz: quiz,
+              isMC: !(quiz.type === 'trueFalse')
             });
 
           } else {
@@ -172,12 +173,9 @@ router.get('/user_edit.:id', (req, res) => {
   }
 });
 
-// GET quiz data (accepts quiz id or quiz name)
-router.get('/api/quiz/:quizName', (req, res) => {
-  const input          = +req.params.quizName ? +req.params.quizName : req.params.quizName,  // Coerce to number if input string would not become NaN
-        whereCondition = typeof input === 'number' ? { id: input } : { name: input };        // Create object based on input type
-
-  models.Quiz.findOne(whereCondition).then(quiz =>
+// GET quiz data
+router.get('/api/quiz/:id', (req, res) => {
+  models.Quiz.findOne({ where: { id: req.params.id }}).then(quiz =>
     quiz.getQuestions().then(questions => {
       quiz.dataValues.questions = questions;
       res.json(quiz);
