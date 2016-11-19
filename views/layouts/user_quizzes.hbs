@@ -5,7 +5,7 @@
   <div class="col s10 offset-s1">
     <br/>
   {{#each quizzes}}
-    <div class="row">
+    <div id="quiz_{{id}}" class="row">
       <div class="col s12">
         <div class="card blue darken-4">
           <div class="card-content white-text">
@@ -14,18 +14,22 @@
               <br/>Taken: {{totalAttempts}} Times
             </div>
             <p class="flavor-text grey-text text-lighten-1">Say: "Alexa, ask cheevo to quiz me on {{name}}"</p>
-            <div class="chip">{{desc}}</div>
-            <div class="right pad-right">
-              <a class="waves-effect waves-light blue accent-3 btn btn-showq" data-id={{@index}}>SHOW QUESTIONS</a>
-              <a class="waves-effect waves-light blue accent-3 btn btn-showq" href="user_edit.{{id}}">EDIT</a>
+            <div class="card grey darken-2">
+              <div class="card-content white-text">
+                {{desc}}
+              </div>
             </div>
-            <br/>
+            <div class="right-align">
+              <a class="waves-effect waves-light blue accent-3 btn btn-showq" data-id={{@index}}>QUESTIONS</a>
+              <a class="waves-effect waves-light blue accent-3 btn" href="user_edit.{{id}}">EDIT</a>
+              <a class="modal-trigger waves-effect waves-light blue accent-3 btn" href="#modal{{id}}">DELETE</a>
+            </div>
             <div id="questions_{{@index}}" data-vis="false" style="display: none;">
             {{#each Questions}}
               <div class="row no-margin">
                 <br/>
                 <div class="col s12">
-                  <div class="card blue darken-4">
+                  <div class="card grey darken-2 no-margin">
                     <div class="card-content white-text">
                       <p>{{#if choiceA}}Question{{else}}True or false{{/if}}: {{q}}</p>
                       {{#if choiceA}}
@@ -45,6 +49,15 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+    <div id="modal{{id}}" class="modal">
+      <div class="modal-content">
+        <h4>Are you sure?</h4>
+      </div>
+      <div class="modal-footer">
+        <a href="#!" class="modal-action modal-close waves-effect waves-light blue accent-3 btn">Cancel</a>
+        <a href="#!" data-id="{{id}}" class="modal-action modal-close waves-effect waves-light blue accent-3 btn btn-del">Delete</a>
       </div>
     </div>
   {{/each}}

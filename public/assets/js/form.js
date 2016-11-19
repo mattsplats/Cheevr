@@ -171,41 +171,55 @@ $(function () {
       });
     }
 
-    console.log(questions);
+    // Extremely minimal validation
+    if ($(`#name`).val().trim().length > 0 && $(`#desc`).val().trim().length > 0) {
 
-    if ($('#page').data('title') === 'edit') {
-      $.ajax({
-        method: 'PUT',
-        url: `${window.location.origin}/api`,
-        data: {
-          id: $('#page').data('id'),
-          name: $(`#name`).val().trim(),
-          desc: $(`#desc`).val().trim(),
-          type: $(`#questionType`).val(),
-          numberToAsk: 0,
-          questions: questions
-        }
-      }).done(res => 
-        Materialize.toast('Quiz Updated!', 2000)
-      ).fail(err =>
-        console.log(err)
-      )
+      if ($('#page').data('title') === 'edit') {
+        $.ajax({
+          method: 'PUT',
+          url: `${window.location.origin}/api`,
+          data: {
+            id: $('#page').data('id'),
+            name: $(`#name`).val().trim(),
+            desc: $(`#desc`).val().trim(),
+            type: $(`#questionType`).val(),
+            numberToAsk: 0,
+            questions: questions
+          }
+        }).done(res => 
+          Materialize.toast('Quiz Updated!', 2000)
+        ).fail(err =>
+          console.log(err)
+        )
 
-    } else {
-      $.post({
-        url: `${window.location.origin}/api`,
-        data: {
-          name: $(`#name`).val().trim(),
-          desc: $(`#desc`).val().trim(),
-          type: $(`#questionType`).val(),
-          numberToAsk: 0,
-          questions: questions
-        }
-      }).done(res => 
-        Materialize.toast('Quiz Added!', 2000)
-      ).fail(err =>
-        console.log(err)
-      )
+      } else {
+        $.post({
+          url: `${window.location.origin}/api`,
+          data: {
+            name: $(`#name`).val().trim(),
+            desc: $(`#desc`).val().trim(),
+            type: $(`#questionType`).val(),
+            numberToAsk: 0,
+            questions: questions
+          }
+        }).done(res => {
+          $(`#name`).val('');
+          $(`#desc`).val('');
+          $('textarea').val('');
+
+          const numQ = $('#input').children().length;
+
+          for (let i = 1; i <= numQ; i++) {
+            $(`#q_${i}`).val('');
+            $(`#choiceA_${i}`).val('');
+            $(`#choiceB_${i}`).val('');
+            $(`#choiceC_${i}`).val('');
+            $(`#choiceD_${i}`).val('');
+          }
+        }).fail(err =>
+          console.log(err)
+        )
+      }
     }
   });
 })

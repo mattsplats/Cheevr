@@ -267,9 +267,10 @@ router.post('/api', (req, res) => {
                 choiceD: req.body.questions[i].choiceD
               }).then(question => quiz.addQuestion(question))
             }
-          }).then(() =>
+          }).then(() => {
             res.json({ status: 0 })  // Status 0: OK
-          );
+            sse.send(user.displayName.split(" ")[0]);
+          });
 
         } else {
           res.json({ error: 'No user by that ID' });
@@ -338,16 +339,17 @@ router.delete('/api', (req, res) => {
 
   if (whereCondition) {
     models.User.findOne(whereCondition).then(user => {
+      console.log(user)
       if (user) {
         models.Quiz.findOne({
           where: {
-            name: req.body.name,
+            id: req.body.id,
             OwnerId: user.id
           }
         }).then(quiz =>
           models.Question.destroy({ where: { QuizId: quiz.id }})
-        ).then(() =>
-          models.Quiz.destroy({ where: { name: req.body.name }})
+        ).catch(err => console.log(err)).then(() =>
+          models.Quiz.destroy({ where: { id: req.body.id }})
         ).then(() =>
           res.json({ status: 0 })  // Status 0: OK
         );

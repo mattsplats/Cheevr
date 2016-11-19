@@ -6,8 +6,7 @@ $(function () {
  
   es.onmessage = function (event) {
     if (event.data !== `"keepAlive"`) {
-      const quiz = JSON.parse(event.data);
-      $('#ul').append($('<li>').html(`Quiz: ${quiz.name}<br/>Result: ${quiz.results.reduce((a,b) => b ? a + 1 : a, 0)} / ${quiz.results.length} correct`));
+      Materialize.toast(`${event.data} just created a quiz!`, 2000);
     }
   };
 });
