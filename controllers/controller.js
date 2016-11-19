@@ -123,15 +123,9 @@ router.get('/user_quizzes', (req, res) => {
         models.Quiz.findAll({
           where: { OwnerId: user.id },
           include: models.Question
-<<<<<<< HEAD
-        }).then(quizzes => {   // Get in order of last quiz taken
-          user.dataValues.quizzes = quizzes;
-          res.render('layouts/user_results', {
-=======
         }).then(quizzes => {
           quizzes.map(quiz => quiz.dataValues.Questions.map(question => question.a = question.a.toUpperCase()));
           res.render('layouts/user_quizzes', {
->>>>>>> master
             isLoggedIn: isLoggedIn(req, res),
             username: user.displayName.split(" ")[0],
             user: user,
