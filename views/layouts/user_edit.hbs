@@ -17,7 +17,7 @@
           <label for="name">Quiz Name</label>
         </div>
         <div class="input-field col m6 s6">
-          <select id="questionType" data-type="trueFalse">
+          <select id="questionType" data-type="{{#if isMC}}multipleChoice{{else}}trueFalse{{/if}}">
             <option value="trueFalse">True or False</option>
             <option value="multipleChoice" {{#if isMC}}selected{{/if}}>Multiple Choice</option>
           </select>
