@@ -1,26 +1,25 @@
-<div class="container">
-  <div class="section no-pad-bot">
-    <h1 class="header center light-green-text">User Page</h1>
-  </div>
-  <ul id="quizzes">
+<div class="section light-green">
+  <h3 class="header center white-text">{{username}}'s Results</h3>
+</div>
+<div class="row no-margin">
+  <div class="col s10 offset-s1">
+  <br/>
   {{#each quizzes}}
-    <li>
-      <h3>{{name}}</h3>
-      {{type}}
-      <div><i>Say: "Alexa, ask educate me to quiz me on {{name}}"</i></div>
-      <p>{{desc}}</p>
-      <br/>
-      <ul>
-      {{#each Questions}}
-        <li>{{q}} ({{a}})</li>
-        {{#if choiceA}}<li>A: {{choiceA}}</li>{{/if}}
-        {{#if choiceB}}<li>B: {{choiceB}}</li>{{/if}}
-        {{#if choiceC}}<li>C: {{choiceC}}</li>{{/if}}
-        {{#if choiceD}}<li>D: {{choiceD}}</li>{{/if}}
-        <br/>
-      {{/each}}
-      </ul>
-    </li>
+    <div class="row">
+      <div class="col s12">
+        <div class="card blue-grey darken-1">
+          <div class="card-content white-text">
+            <span class="card-title">{{name}}</span>
+            <div class="right pad-right">
+              <p>Attempts: {{UserQuiz.timesAttempted}}</p>
+              <p>Accuracy: {{UserQuiz.accuracy}}</p>
+            </div>
+            <p class="flavor-text grey-text text-lighten-1">Say: "Alexa, ask cheevo to quiz me on {{name}}"</p>
+            <div class="chip">{{desc}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
   {{/each}}
-  </ul>
+  </div>
 </div>

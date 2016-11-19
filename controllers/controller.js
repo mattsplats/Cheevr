@@ -94,7 +94,27 @@ router.get('/gettingstarted', (req, res) => renderWithUsername('layouts/gettings
 router.get('/search', (req, res) => renderWithUsername('layouts/search', req, res));
 
 // Auth required web routes
-router.get('/user_results', (req, res) => {
+router.get('/user_results', (req, res) =>  {
+  const whereCondition = authUser(req, res);
+
+  if (whereCondition) {
+    models.User.findOne(whereCondition).then(user => {
+      if (user) {
+        user.getQuizzes({ order: 'UserQuiz.updatedAt DESC' }).then(quizzes =>
+          res.render('layouts/user_results', {
+            isLoggedIn: isLoggedIn(req, res),
+            username: user.displayName.split(" ")[0],
+            quizzes: quizzes
+          })
+        )
+
+      } else {
+        res.json({ error: 'No user by that ID' });
+      }
+    })
+  }
+});
+router.get('/user_quizzes', (req, res) => {
   const whereCondition = authUser(req, res);
 
   if (whereCondition) {
@@ -103,24 +123,60 @@ router.get('/user_results', (req, res) => {
         models.Quiz.findAll({
           where: { OwnerId: user.id },
           include: models.Question
+<<<<<<< HEAD
         }).then(quizzes => {   // Get in order of last quiz taken
           user.dataValues.quizzes = quizzes;
           res.render('layouts/user_results', {
+=======
+        }).then(quizzes => {
+          quizzes.map(quiz => quiz.dataValues.Questions.map(question => question.a = question.a.toUpperCase()));
+          res.render('layouts/user_quizzes', {
+>>>>>>> master
             isLoggedIn: isLoggedIn(req, res),
             username: user.displayName.split(" ")[0],
             user: user,
-            quizzes: user.dataValues.quizzes
+            quizzes: quizzes
           });
         })
 
       } else {
-        res.send('No user by that ID');
+        res.json({ error: 'No user by that ID' });
       }
     })
   }
 });
-router.get('/user_quizzes', (req, res) => renderWithUsername('layouts/user_quizzes', req, res));
 router.get('/user_create', (req, res) => renderWithUsername('layouts/user_create', req, res));
+router.get('/user_edit.:id', (req, res) => {
+  const whereCondition = authUser(req, res);
+
+  if (whereCondition) {
+    models.User.findOne(whereCondition).then(user => {
+      if (user) {
+        models.Quiz.findOne({
+          where: {
+            OwnerId: user.id,
+            id: req.params.id
+          },
+          include: models.Question
+        }).then(quiz => {
+          if (quiz) {
+            res.render('layouts/user_edit', {
+              isLoggedIn: isLoggedIn(req, res),
+              username: user.displayName.split(" ")[0],
+              quiz: quiz
+            });
+
+          } else {
+            res.json({ error: 'Quiz not owned by current user' });
+          }
+        })
+
+      } else {
+        res.json({ error: 'No user by that ID' });
+      }
+    })
+  }
+});
 
 // GET quiz data (accepts quiz id or quiz name)
 router.get('/api/quiz/:quizName', (req, res) => {
@@ -149,7 +205,7 @@ router.get('/api/search/:quizName', (req, res) =>
     include: [models.Question]
   }).then(quizByName =>
     models.Quiz.findAll({
-      where: { name: { $like: `%${req.params.quizName}%` }},
+      where: { name: { $like: `${req.params.quizName}%` }},
       include: [models.Question]
     }).then(quizzesByName =>
       models.Quiz.findAll({
@@ -203,6 +259,7 @@ router.post('/api', (req, res) => {
         if (user) {
           models.Quiz.create({
             name: req.body.name,
+            desc: req.body.desc,
             type: req.body.type,
             OwnerId: user.id,
             OwnerDisplayName: user.displayName,
@@ -315,11 +372,17 @@ router.delete('/api', (req, res) => {
 // Alexa API
 // Respond to quiz requests
 router.get('/alexa/:string', (req, res) => {
+  const string      = req.params.string.split('.'),
+        quizName    = string[0],
+        accessToken = !string[1] || string[1] == 'false' || typeof +string[1] === 'number' ? false : string[1];
 
-  let string = req.params.string.split('.');
-  let quizName = string[0];
-  let accessToken = string[1];
-  if (accessToken == 'false' || !accessToken) accessToken = false;
+  console.log();
+  console.log('==========================');
+  console.log('Alexa GET request');
+  console.log('quizName:', quizName);
+  console.log('accessToken:', accessToken);
+  console.log('==========================');
+  console.log();
 
   models.sequelize.query(`SELECT id, name, type, numberToAsk FROM Quizzes WHERE name SOUNDS LIKE ?`,
     {
@@ -329,7 +392,7 @@ router.get('/alexa/:string', (req, res) => {
   ).then(quiz => {
 
     // If a quiz was found
-    if (quiz.length > 0) {
+    if (quiz && quiz.length > 0) {
       models.Question.findAll(
         {
           attributes: ['id', 'q', 'a', 'choiceA', 'choiceB', 'choiceC', 'choiceD'],
@@ -348,14 +411,22 @@ router.get('/alexa/:string', (req, res) => {
           });
 
         // If we are selecting a subset of questions for users
-        } else if (accessToken) {
+        } else if (accessToken || true) {
           const options = {
-            uri: 'https://api.amazon.com/user/profile?accesstoken=' + accessToken,
+            uri: `https://api.amazon.com/user/profile?access_token=${accessToken}`,
             json: true
           };
 
+          // Get ids of all questions in quiz
+          let ids = [];
+          for (let i = 0; i < questions.length; i++) {
+            ids.push(questions[i].id);
+          }
+
           // Query Amazon API for user profile
           rp(options).then(profile => {
+
+            console.log(profile);
 
             // Get the user database model
             models.User.findOne({ where: { AmazonId: profile.user_id }}).then(user => {
@@ -369,20 +440,15 @@ router.get('/alexa/:string', (req, res) => {
                   },
                   order: ['accuracy']
                 }).then(uq => {
-                  let qArr = [],  // Questions to send
-                      i    = 0,
-                      ids  = [];  // IDs of all questions in quiz
 
-                  // Fill ids
-                  for (let i = 0; i < questions.length; i++) {
-                    ids.push(questions[i].id);
-                  };
+                  let qArr = [],  // Questions to send
+                      i    = 0;
 
                   // Iterate through questions and push questions user has not taken to qArr
                   while (i < questions.length && qArr.length < numToAsk) {
 
-                    // If questions have not been taken (are not in UserQuestion) AND have not been selected already (are not in qArr)
-                    if (uq.indexOfProp(ids[i], 'id') === -1 && qArr.indexOfProp(ids[i], 'id') === -1) qArr.push(questions[i]);
+                    // If user has never tried question (is not in UserQuestion) AND question has not been selected already (is not in qArr)
+                    if (uq.indexOfProp(ids[i], 'dataValues', 'QuestionId') === -1 && qArr.indexOfProp(ids[i], 'dataValues', 'id') === -1) qArr.push(questions[i]);
 
                     i++;
                   }
@@ -392,11 +458,10 @@ router.get('/alexa/:string', (req, res) => {
                   while (qArr.length < numToAsk) {
 
                     // Quadratic random number distribution (skews towards UserQuestions with low accuracy)
-                    const rand  = Math.random(),
-                          index = Math.floor(rand * rand) * uq.length;
+                    const index = Math.floor(Math.pow(Math.random(), 2) * uq.length);
 
                     // If qArr does not have a question with chosen index's id, push question from questions where id === uq[index].id
-                    if (qArr.indexOfProp(uq[index].id, 'id') === -1) qArr.push(questions[questions.indexOfProp(uq[index].id, 'id')]);
+                    if (qArr.indexOfProp(uq[index].dataValues.QuestionId, 'dataValues', 'id') === -1) qArr.push(questions[questions.indexOfProp(uq[index].dataValues.QuestionId, 'dataValues', 'id')]);
                   }
 
                   res.json({
@@ -415,10 +480,28 @@ router.get('/alexa/:string', (req, res) => {
                 });
               }
             })
+          }).catch(err => {  // If Amazon API gives bad response
+            console.log();
+            console.log('==========================');
+            console.log('ERROR: Response code', err.message);
+            console.log('==========================');
+            console.log();
+
+            res.json({
+              questions: questions.slice(0, numToAsk - 1),
+              name: quiz[0].dataValues.name,
+              type: quiz[0].dataValues.type
+            })
           })
 
         // If no access token was sent
         } else {
+          console.log();
+          console.log('==========================');
+          console.log('No access token');
+          console.log('==========================');
+          console.log();
+
           res.json({
             questions: questions.slice(0, numToAsk - 1),
             name: quiz[0].dataValues.name,
@@ -429,6 +512,12 @@ router.get('/alexa/:string', (req, res) => {
 
     // If no quiz was found
     } else {
+      console.log();
+      console.log('==========================');
+      console.log('Not found:', quizName);
+      console.log('==========================');
+      console.log();
+
       res.json({ name: false });
     }
   });

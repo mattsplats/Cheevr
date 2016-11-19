@@ -1,3 +1,5 @@
+'use strict';
+
 module.exports = function (models) {
   models.sequelize.query('SET FOREIGN_KEY_CHECKS = 0')
   .then(() => models.sequelize.sync({ force: true }))

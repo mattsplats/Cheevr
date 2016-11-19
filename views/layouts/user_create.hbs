@@ -1,162 +1,112 @@
-<div id="index-banner" class="parallax-container">
-  <div class="section no-pad-bot">
-    <div class="container">
-      <br><br>
-      <h1 class="header center light-green-text text-darken-2">Create your Own Quiz</h1>
-      <div class="row center">
-        <h5 class="header col s12 light">At the moment you have the chance to create two types of quizzes true or false, or multiple choice.</h5>
-      </div>
-
-    </div>
+<div id="page" data-title="create">
+  <div class="section light-green">
+    <h3 class="header center white-text">Create New Quiz</h3>
   </div>
-  <div class="parallax"><img src="/assets/images/diagmonds_@2X.png" alt="Change background for an original"></div>
 </div>
 <div class="container">
-  <div class="section" id="createQuiz">
-    <div class="row">
-      <form class="col s12">
-        <div class="row">
-    <div class="input-field col s6">
-    <select id="questionType">
-      <option value="" disabled selected>Choose your option</option>
-      <option value="trueFalse">True or False</option>
-      <option value="multipleChoice">Multiple Choice</option>
-    </select>
-    <label>Type of Quiz</label>
-    </div>
-      </form>
-  <div class="row center">
-    <a id="create-button" class="btn-large waves-effect waves-light light-green darken-2">Create</a>
-  </div>
-  </div>
-  </div>
+  <br/>
+
+  <!-- Form -->
+  <div class="row">
+    <form class="col s12">
+
+      <!-- Name/type -->
+      <div class="row">
+        <div class="input-field col m6 s12">
+          <input id="name" type="text" class="validate" required>
+          <label for="name">Quiz Name</label>
+        </div>
+        <div class="input-field col m6 s6">
+          <select id="questionType" data-type="trueFalse">
+            <option value="trueFalse">True or False</option>
+            <option value="multipleChoice">Multiple Choice</option>
+          </select>
+          <label>Quiz Type</label>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="row">
+        <div class="input-field col s12">
+          <textarea id="desc" class="materialize-textarea"></textarea>
+          <label for="desc">Description</label>
+        </div>
+      </div>
+
+      <!-- Input rows -->
+      <div id="input">
+
+        <div id="block_1">
+          <!-- True/False Statement 1 -->
+          <div class="row">
+            <div class="input-field col m8 s12">
+              <input id="q_1" type="text" class="validate">
+              <label for="q_1">True/False Statement 1</label>
+            </div>
+            <div class="input-field col m4 s6">
+              <p>
+                <input name="group1" type="radio" id="test1" />
+                <label for="test1">Red</label>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- True/False Statement 2 -->
+        <div id="block_2">
+          <div class="row">
+            <div class="input-field col m8 s12">
+              <input id="q_2" type="text" class="validate">
+              <label for="q_2">True/False Statement 2</label>
+            </div>
+            <div class="input-field col m4 s6">
+              <select id="a_2">
+                <option disabled selected value="">Correct answer?</option>
+                <option value="true">true</option>
+                <option value="false">false</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div id="block_3">
+          <!-- True/False Statement 3 -->
+          <div class="row">
+            <div class="input-field col m8 s12">
+              <input id="q_3" type="text" class="validate">
+              <label for="q_3">True/False Statement 3</label>
+            </div>
+            <div class="input-field col m4 s6">
+              <select id="a_3">
+                <option disabled selected value="">Correct answer?</option>
+                <option value="true">true</option>
+                <option value="false">false</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </form>
   </div>
   <div class="section" id="buttonSection">
-  </div>
+    <br/>
+    <div class="row">
+      <div class="col s8">
+        <a id="addQuestion" class="btn-large waves-effect waves-light light-green darken-2">Add Question
+          <i class="material-icons right">note_add</i>
+        </a>
+        <a id="rmQuestion" class="btn-large waves-effect waves-light light-green darken-2" style="display: none;">Remove Question
+          <i class="material-icons right">delete</i>
+        </a>
+      </div>
+      <div class="col s4 right-align">
+        <button id="submitQuiz" class="btn-large waves-effect waves-light light-green darken-2" type="submit">Submit
+          <i class="material-icons right">send</i>
+        </button>
+      </div>
+    </div>
+  </div> 
 </div>
 
-<script>
-var createQuizzes={
-  questions: [],
-  answers: [],
-  options: {},
-  totalQuestions: 3,
-
-  //function to create a true or false quiz.
-  trueFalseQuiz: function(){
-    createQuizzes.nameDesc();
-    for(i=0; i<createQuizzes.totalQuestions; i++){
-    $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='q"+i+"' type='text' class='validate'><label for='q"+i+"'>Question</label></div><div class='input-field col s4'><select id='a"+i+"'><option value='' disabled selected>Choose your option</option><option value='true'>True</option><option value='false'>False</option></select><label>Answer</label></div></form></div></div>");
-    $('select').material_select();
-    }
-    createQuizzes.addSubmit();
-    $('#addQuestion').on('click', function(){
-      createQuizzes.totalQuestions++;
-      var extra=createQuizzes.totalQuestions-1;
-      $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='q"+extra+"' type='text' class='validate'><label for='q"+extra+"'>Question</label></div><div class='input-field col s4'><select id='a"+extra+"'><option value='' disabled selected>Choose your option</option><option value='true'>True</option><option value='false'>False</option></select><label>Answer</label></div></form></div></div>");
-      $('select').material_select();
-    });
-    $('#submitQuiz').on('click', function(){
-      for (a=0; a<createQuizzes.totalQuestions; a++){
-        var ques=$("#q"+a+"").val().trim();
-        var ans=$("#a"+a+"").val().trim();
-        var newQuestion={
-          q: ques,
-          a: ans,
-        }
-        createQuizzes.questions.push(newQuestion);
-      };
-      var newQuiz={
-        name: $("#quizName").val().trim(),
-        desc: $("#desc").val().trim(),
-        type: createQuizzes.questionType,
-        numberToAsk: 0,
-        questions: createQuizzes.questions,
-      };
-      createQuizzes.postQuiz(newQuiz);
-    });
-  },
-
-  //function to create a multiple choice quiz.
-  multipleChoice: function(){
-    createQuizzes.nameDesc();
-    for(i=0; i<createQuizzes.totalQuestions; i++){
-    $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='q"+i+"' type='text' class='validate'><label for='q"+i+"'>Question</label></div><div class='input-field col s4'><select id='a"+i+"'><option value='' disabled selected>Choose your option</option><option value='a'>A</option><option value='b'>B</option><option value='c'>C</option><option value='d'>D</option></select><label>Correct Answer</label></div></form></div></div>");
-    $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='choiceA"+i+"' type='text' class='validate'><label for='choiceA"+i+"'>Answer for option A</label></div></div>");
-    $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='choiceB"+i+"' type='text' class='validate'><label for='choiceB"+i+"'>Answer for option B</label></div></div>");
-    $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='choiceC"+i+"' type='text' class='validate'><label for='choiceC"+i+"'>Answer for option C</label></div></div>");
-    $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='choiceD"+i+"' type='text' class='validate'><label for='choiceA"+i+"'>Answer for option D</label></div></div>");
-    $('select').material_select();
-    }
-    createQuizzes.addSubmit();
-    $('#addQuestion').on('click', function(){
-      createQuizzes.totalQuestions++;
-      var extra=createQuizzes.totalQuestions-1;
-      $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='q"+extra+"' type='text' class='validate'><label for='q"+extra+"'>Question</label></div><div class='input-field col s4'><select id='a"+extra+"'><option value='' disabled selected>Choose your option</option><option value='a'>A</option><option value='b'>B</option><option value='c'>C</option><option value='d'>D</option></select><label>Correct Answer</label></div></form></div></div>");
-      $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='choiceA"+extra+"' type='text' class='validate'><label for='choiceA"+extra+"'>Answer for option A</label></div></div>");
-      $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='choiceB"+extra+"' type='text' class='validate'><label for='choiceB"+extra+"'>Answer for option B</label></div></div>");
-      $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='choiceC"+extra+"' type='text' class='validate'><label for='choiceC"+extra+"'>Answer for option C</label></div></div>");
-      $('#createQuiz').append("<div class='row'><form class='col s12'><div class='row'><div class='input-field col s8'><input id='choiceD"+extra+"' type='text' class='validate'><label for='choiceA"+extra+"'>Answer for option D</label></div></div>");
-      $('select').material_select();
-    });
-    $('#submitQuiz').on('click', function(){
-      for (a=0; a<createQuizzes.totalQuestions; a++){
-        var ques=$("#q"+a+"").val().trim();
-        var ans=$("#a"+a+"").val().trim();
-        var choiceA=$("#choiceA"+a+"").val().trim();
-        var choiceB=$("#choiceB"+a+"").val().trim();
-        var choiceC=$("#choiceC"+a+"").val().trim();
-        var choiceD=$("#choiceD"+a+"").val().trim();
-        var newQuestion={
-          q: ques,
-          a: ans,
-          choiceA: choiceA,
-          choiceB: choiceB,
-          choiceC: choiceC,
-          choiceD: choiceD
-        }
-        createQuizzes.questions.push(newQuestion);
-      };
-      var newQuiz={
-        name: $("#quizName").val().trim(),
-        desc: $("#desc").val().trim(),
-        type: createQuizzes.questionType,
-        numberToAsk: 0,
-        questions: createQuizzes.questions,
-      };
-      createQuizzes.postQuiz(newQuiz);
-    });
-  },
-
-  //function for name and description input.
-  nameDesc: function(){
-    $("#createQuiz").html("<div class='row'><div class='col s3'></div><form class='col s8'><div class='input-field col s8'><input id='quizName' type='text' class='validate'><label for='quizName'>Quiz Name</label></div></form>");
-    $("#createQuiz").append("<div class='row'><div class='col s3'></div><form class='col s8'><div class='input-field col s8'><textarea id='desc' class='materialize-textarea'></textarea><label for='desc'>Description</label></div></form></div>")
-  },
-
-  //function for add and submit buttons.
-  addSubmit: function(){
-    $('#buttonSection').append("<div class='row'><div class='col s4'><a id='addQuestion' class='btn-large waves-effect waves-light light-green darken-2'><i class='material-icons right'>note_add</i>Add Question</a></div><div class='col s4'></div><div class='col s4'><a id='submitQuiz' class='btn-large waves-effect waves-light light-green darken-2'><i class='material-icons right'>send</i>Submit</a></div></div>");
-  },
-
-  //function to post new quiz.
-  postQuiz:function(newQuiz){
-    console.log(newQuiz);
-    var currentURL = window.location.origin;
-    $.post(currentURL + '/api', newQuiz).done(function (data) {
-        console.log(data);
-        Materialize.toast('Quiz Added!', 4000)
-      });
-  }
-};
-
-  $('#create-button').on('click', function () {
-    createQuizzes.questionType=$("#questionType").val().trim();
-    console.log(createQuizzes.questionType);
-    if(createQuizzes.questionType==='trueFalse'){
-      createQuizzes.trueFalseQuiz();
-    } else if (createQuizzes.questionType==='multipleChoice') {
-      createQuizzes.multipleChoice();
-    }
-  });
-</script>
+<script src="assets/js/form.js"></script>
