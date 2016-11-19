@@ -13,12 +13,12 @@ $(function () {
     <input id="q_${i}" type="text" class="validate">
     <label for="q_${i}">True/False Statement ${i}</label>
   </div>
-  <div class="input-field col m4 s6">
-    <select id="a_${i}">
-      <option disabled selected value="">Correct answer?</option>
-      <option value="true">true</option>
-      <option value="false">false</option>
-    </select>
+  <div class="input-field col m4 s6 center">
+    <input name="a_${i}" type="radio" id="a_${i}_true" checked="true" />
+    <label for="a_${i}_true">True</label>
+    &nbsp;
+    <input name="a_${i}" type="radio" id="a_${i}_false" />
+    <label for="a_${i}_false">False</label>
   </div>
 </div>
 `;
@@ -80,11 +80,15 @@ ${i < endIndex ? `<div class="divider"></div><br/>` : ''}
   if ($('#page').data('title') === 'edit') {
     $.get(`api/quiz/${$('#page').data('id')}`).then(quiz => {
       $('#input').html(htmlGen[quiz.type](1, quiz.questions.length));
-      $('select').material_select();
+
+      $('#name').val(quiz.name).addClass('valid').next().addClass('active');
+      $('#desc').val(quiz.desc).addClass('valid').next().addClass('active');
 
       for (let i = 1; i <= quiz.questions.length; i++) {
-        $(`#q_${[i]}`).val(quiz.questions[i - 1].q).addClass('valid').next().addClass('active');
-        console.log($(`#a_${[i]}`).prev('ul').attr('id'));
+        $(`#q_${i}`).val(quiz.questions[i - 1].q).addClass('valid').next().addClass('active');
+        if (quiz.type === 'trueFalse') {
+          if (quiz.questions[i - 1].a === 'false') $(`#a_${i}_false`).click();
+        }
       }
     })
   };
@@ -132,7 +136,7 @@ ${i < endIndex ? `<div class="divider"></div><br/>` : ''}
     for (let i = 1; i <= numQ; i++) {
       questions.push({
         q: $(`#q_${i}`).val().trim(),
-        a: $(`#a_${i}`).val().trim(),
+        a: $(`input[type=radio][name=a_${i}]`).prop('checked'),
         choiceA: $(`#choiceA_${i}`).val() ? $(`#choiceA_${i}`).val().trim() : null,
         choiceB: $(`#choiceB_${i}`).val() ? $(`#choiceB_${i}`).val().trim() : null,
         choiceC: $(`#choiceC_${i}`).val() ? $(`#choiceC_${i}`).val().trim() : null,
@@ -140,21 +144,39 @@ ${i < endIndex ? `<div class="divider"></div><br/>` : ''}
       });
     }
 
-    console.log('OK')
+    if ($('#page').data('title') === 'edit') {
+      $.ajax({
+        method: 'PUT',
+        url: `${window.location.origin}/api`,
+        data: {
+          id: $('#page').data('id'),
+          name: $(`#name`).val().trim(),
+          desc: $(`#desc`).val().trim(),
+          type: $(`#questionType`).val(),
+          numberToAsk: 0,
+          questions: questions
+        }
+      }).done(res => 
+        Materialize.toast('Quiz Updated!', 2000)
+      ).fail(err =>
+        console.log(err)
+      )
 
-    $.post({
-      url: `${window.location.origin}/api`,
-      data: {
-        name: $(`#name`).val().trim(),
-        desc: $(`#desc`).val().trim(),
-        type: $(`#questionType`).val(),
-        numberToAsk: 0,
-        questions: questions
-      }
-    }).done(res => 
-      Materialize.toast('Quiz Added!', 2000)
-    ).fail(err =>
-      console.log(err)
-    )
+    } else {
+      $.post({
+        url: `${window.location.origin}/api`,
+        data: {
+          name: $(`#name`).val().trim(),
+          desc: $(`#desc`).val().trim(),
+          type: $(`#questionType`).val(),
+          numberToAsk: 0,
+          questions: questions
+        }
+      }).done(res => 
+        Materialize.toast('Quiz Added!', 2000)
+      ).fail(err =>
+        console.log(err)
+      )
+    }
   });
 })
