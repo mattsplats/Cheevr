@@ -17,13 +17,12 @@
     <script src="assets/js/init.js"></script>
     <script src="assets/js/app.js"></script>
 
-
     <!-- Desktop dropdown -->
     {{#if isLoggedIn}}
     <ul id="dropdown_desktop" class="dropdown-content">
-      <li><a class= "white  blue-text text-darken-4" href="/user_results">My Results</a></li>
-      <li><a class= "white  blue-text text-darken-4" href="/user_quizzes">My Quizzes</a></li>
-      <li><a class= "white  blue-text text-darken-4"href="/user_create">Create Quiz</a></li>
+      <li><a class="white blue-text text-darken-4" href="/user_results">My Results</a></li>
+      <li><a class="white blue-text text-darken-4" href="/user_quizzes">My Quizzes</a></li>
+      <li><a class="white blue-text text-darken-4" href="/user_create">Create Quiz</a></li>
     </ul>
     {{/if}}
 
@@ -34,17 +33,17 @@
         <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
         <ul class="right hide-on-small-only">
           <li><a class="blue lighten-5 blue-text" href="/search"><i class="material-icons">search</i></a></li>
-          <li><a class="blue lighten-5 blue-text"href="/gettingStarted">Getting Started</a></li>
+          <li><a class="blue lighten-5 blue-text" href="/gettingStarted">Getting Started</a></li>
           {{#if isLoggedIn}}
             <li><a class="dropdown-button blue lighten-5 blue-text" href="#!" data-activates="dropdown_desktop">{{username}}'s Account<i class="material-icons right">arrow_drop_down</i></a></li>
           {{else}}
-            <li><a href="/auth/amazon">Login</a></li>
+            <li><a class="white blue-text text-darken-4" href="/auth/amazon">Login</a></li>
           {{/if}}
         </ul>
         <ul class="side-nav" id="nav-mobile">
           <li><a href="/gettingStarted">Getting Started</a></li>
+          <li><a href="/search">Search Quizzes</a></li>
           {{#if isLoggedIn}}
-            <li><a href="/search">Search Quizzes</a></li>
             <li><a href="/user_results">My Results</a></li>
             <li><a href="/user_quizzes">My Quizzes</a></li>
             <li><a href="/user_create">Create Quiz</a></li>
@@ -54,10 +53,13 @@
         </ul>
       </div>
     </nav>
+    
+    <!-- Main -->
     <main>
     {{{ body }}}
     </main>
-{{!-- Footer --}}
+
+    <!-- Footer -->
     <footer class="page-footer blue lighten-5">
       <div class="container">
         <div class="row">
