@@ -33,7 +33,6 @@
         <a href="#" data-activates="nav-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
         <ul class="right hide-on-small-only">
           <li><a class="blue lighten-5 blue-text" href="/search"><i class="material-icons">search</i></a></li>
-          <li><a class="blue lighten-5 blue-text" href="/gettingStarted">Getting Started</a></li>
           {{#if isLoggedIn}}
             <li><a class="dropdown-button blue lighten-5 blue-text" href="#!" data-activates="dropdown_desktop">{{username}}'s Account<i class="material-icons right">arrow_drop_down</i></a></li>
           {{else}}
@@ -41,7 +40,6 @@
           {{/if}}
         </ul>
         <ul class="side-nav" id="nav-mobile">
-          <li><a href="/gettingStarted">Getting Started</a></li>
           <li><a href="/search">Search Quizzes</a></li>
           {{#if isLoggedIn}}
             <li><a href="/user_results">My Results</a></li>
@@ -61,17 +59,11 @@
 
     <!-- Footer -->
     <footer class="page-footer blue lighten-5">
-      <div class="container">
-        <div class="row">
-            <h6 class="blue-text text-darken-4 center">Company Bio</h6>
-            <p class="blue-text text-darken-4">We are a team of college students working on this project like it's our full time job. Any amount would help support and continue development on this project and is greatly appreciated.</p>
+      <div class="footer-copyright">
+        <div class="container">
+          © 2016 Copyright Cheevo Inc.
         </div>
       </div>
-      <div class="footer-copyright blue lighten-4">
-      <div class="container">
-      Made by <a class="blue-text text-lighten-3" href="http://materializecss.com">Materialize</a>
-      </div>
-    </div>
     </footer>
   </body>
 </html>
