@@ -137,7 +137,7 @@ router.get('/api/quiz/:quizName', (req, res) => {
 
 // GET all quizzes
 router.get('/api/quizzes', (req, res) =>
-  models.Quiz.findAll().then(quizzes => 
+  models.Quiz.findAll().then(quizzes =>
     res.json(quizzes)
   )
 );
@@ -316,8 +316,10 @@ router.delete('/api', (req, res) => {
 // Respond to quiz requests
 router.get('/alexa/:string', (req, res) => {
 
-  let [quizName, accessToken] = req.params.string.split('.');
-  if (accessToken == 'false' || !accesstoken) accessToken = false;
+  let string = req.params.string.split('.');
+  let quizName = string[0];
+  let accessToken = string[1];
+  if (accessToken == 'false' || !accessToken) accessToken = false;
 
   models.sequelize.query(`SELECT id, name, type, numberToAsk FROM Quizzes WHERE name SOUNDS LIKE ?`,
     {
