@@ -76,6 +76,19 @@ ${i < endIndex ? `<div class="divider"></div><br/>` : ''}
     }
   }
 
+  // Render edit page
+  if ($('#page').data('title') === 'edit') {
+    $.get(`api/quiz/${$('#page').data('id')}`).then(quiz => {
+      $('#input').html(htmlGen[quiz.type](1, quiz.questions.length));
+      $('select').material_select();
+
+      for (let i = 1; i <= quiz.questions.length; i++) {
+        $(`#q_${[i]}`).val(quiz.questions[i - 1].q).addClass('valid').next().addClass('active');
+        console.log($(`#a_${[i]}`).prev('ul').attr('id'));
+      }
+    })
+  };
+
 
   // Events
   // On select question type
